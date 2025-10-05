@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+
+# Fireblocks secret key
+*.key
+fireblocks_secret.key
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
