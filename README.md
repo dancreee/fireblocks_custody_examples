@@ -9,6 +9,7 @@ This project demonstrates:
 - Internal transfers between vaults
 - External transfers to one-time addresses
 - Transfers to whitelisted external wallets
+- Smart contract interactions (Aave V3 deposits)
 
 ## Quick Start
 
@@ -55,6 +56,18 @@ npm run example:transfer-address
 
 # Transfer to a whitelisted external wallet
 npm run example:transfer-wallet
+
+# Wrap ETH to WETH (step 1 for DeFi)
+npm run example:wrap-eth
+
+# Unwrap WETH back to ETH
+npm run example:unwrap-weth
+
+# Supply WETH to Aave V3 lending pool
+npm run example:aave-supply
+
+# Withdraw WETH from Aave V3 back to vault
+npm run example:aave-withdraw
 ```
 
 **Note:** Before running transfer examples, update the hardcoded values (asset IDs, vault IDs, addresses) in the example files to match your workspace configuration.
@@ -69,13 +82,18 @@ src/
 ├── fireblocks/
 │   ├── vaults.ts          # Vault account operations
 │   ├── transactions.ts    # Transaction creation and management
-│   └── wallets.ts         # External wallet operations
+│   ├── wallets.ts         # External wallet operations
+│   └── contracts.ts       # Smart contract interaction helpers
 └── examples/
     ├── example-list-default-accounts.ts
     ├── example-list-accounts-with-assets.ts
     ├── example-transfer-to-vault.ts
     ├── example-transfer-to-external-address.ts
-    └── example-transfer-to-external-wallet.ts
+    ├── example-transfer-to-external-wallet.ts
+    ├── example-wrap-eth-to-weth.ts
+    ├── example-unwrap-weth-to-eth.ts
+    ├── example-aave-supply-weth.ts
+    └── example-aave-withdraw-weth.ts
 ```
 
 ### Architecture
@@ -83,8 +101,8 @@ src/
 - **`config.ts`** - Loads environment variables (API keys, paths, environment selection)
 - **`client.ts`** - Initializes the Fireblocks SDK client with credentials
 - **`types.ts`** - Shared TypeScript interfaces for type safety
-- **`fireblocks/`** - Domain-specific helper functions organized by feature
-- **`examples/`** - Runnable example scripts demonstrating different use cases
+- **`fireblocks/`** - Domain-specific helper functions organized by feature (includes contract interaction helpers)
+- **`examples/`** - Runnable example scripts demonstrating transfers and DeFi interactions
 
 ## Development
 

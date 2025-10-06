@@ -4,11 +4,15 @@
   "description": "Fireblocks TypeScript SDK examples demonstrating custody operations, vault management, and transaction workflows",
   "main": "dist/client.js",
   "scripts": {
-    "example:list-default": "ts-node src/examples/example-list-default-accounts.ts",
-    "example:list-assets": "ts-node src/examples/example-list-accounts-with-assets.ts",
-    "example:transfer-vault": "ts-node src/examples/example-transfer-to-vault.ts",
-    "example:transfer-address": "ts-node src/examples/example-transfer-to-external-address.ts",
-    "example:transfer-wallet": "ts-node src/examples/example-transfer-to-external-wallet.ts",
+    "example:list-default": "ts-node -r tsconfig-paths/register src/examples/example-list-default-accounts.ts",
+    "example:list-assets": "ts-node -r tsconfig-paths/register src/examples/example-list-accounts-with-assets.ts",
+    "example:transfer-vault": "ts-node -r tsconfig-paths/register src/examples/example-transfer-to-vault.ts",
+    "example:transfer-address": "ts-node -r tsconfig-paths/register src/examples/example-transfer-to-external-address.ts",
+    "example:transfer-wallet": "ts-node -r tsconfig-paths/register src/examples/example-transfer-to-external-wallet.ts",
+    "example:wrap-eth": "ts-node -r tsconfig-paths/register src/examples/example-wrap-eth-to-weth.ts",
+    "example:unwrap-weth": "ts-node -r tsconfig-paths/register src/examples/example-unwrap-weth-to-eth.ts",
+    "example:aave-supply": "ts-node -r tsconfig-paths/register src/examples/example-aave-supply-weth.ts",
+    "example:aave-withdraw": "ts-node -r tsconfig-paths/register src/examples/example-aave-withdraw-weth.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
@@ -19,7 +23,8 @@
   "license": "ISC",
   "dependencies": {
     "@fireblocks/ts-sdk": "^12.1.1",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0"
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
@@ -30,6 +35,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
   }
 }
