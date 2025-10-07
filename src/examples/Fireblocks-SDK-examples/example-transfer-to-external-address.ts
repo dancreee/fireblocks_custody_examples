@@ -22,6 +22,7 @@
 
 import { initializeFireblocks } from "@/client";
 import { createTransaction } from "@/fireblocks/transactions";
+import { monitorTransaction } from "@/fireblocks/monitor";
 
 async function main() {
   try {
@@ -37,7 +38,37 @@ async function main() {
       { oneTimeAddress: "0x0eFe1191e2e498aE1aaDddc12A7E9De36b60829e" },
       "Send to external address"
     );
-    console.log("Transaction Result:", JSON.stringify(txResult, null, 2));
+
+    console.log("\n✅ Transaction created!");
+    console.log("Transaction ID:", txResult.id);
+
+    if (!txResult.id) {
+      throw new Error("Transaction ID not returned from Fireblocks");
+    }
+
+    // Monitor transaction until completion
+    console.log("\n⏳ Waiting for transaction to complete...");
+    const result = await monitorTransaction(fireblocks, txResult.id, {
+      rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+      waitForConfirmations: 1,
+    });
+
+    if (result.error) {
+      console.error(`\n❌ Transaction failed: ${result.error}`);
+      process.exit(1);
+    }
+
+    console.log("\n✅ Transaction complete!");
+    console.log(`Status: ${result.status}`);
+    if (result.txHash) {
+      console.log(`Tx Hash: ${result.txHash}`);
+      console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
+    }
+    if (result.blockNumber) {
+      console.log(
+        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
+      );
+    }
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

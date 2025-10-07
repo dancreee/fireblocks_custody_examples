@@ -33,6 +33,7 @@
 import { ethers } from "ethers";
 import { initializeFireblocks } from "@/client";
 import { createContractCall } from "@/fireblocks/contracts";
+import { monitorTransaction } from "@/fireblocks/monitor";
 
 // Aave V3 Sepolia contract addresses
 const AAVE_POOL = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
@@ -93,16 +94,37 @@ async function main() {
       "Supply WETH to Aave V3 on Sepolia"
     );
 
-    console.log("\n✅ Supply transaction created successfully!");
+    console.log("\n✅ Transaction created!");
     console.log("Transaction ID:", txResult.id);
-    console.log("Status:", txResult.status);
-    console.log("\nFull transaction details:");
-    console.log(JSON.stringify(txResult, null, 2));
 
-    console.log("\n📝 Next steps:");
-    console.log("1. Check transaction status in Fireblocks console");
-    console.log("2. After confirmation, verify your aWETH balance");
-    console.log("3. Visit https://app.aave.com (testnet mode) to see your deposit");
+    if (!txResult.id) {
+      throw new Error("Transaction ID not returned from Fireblocks");
+    }
+
+    // Monitor transaction until completion
+    console.log("\n⏳ Waiting for transaction to complete...");
+    const result = await monitorTransaction(fireblocks, txResult.id, {
+      rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+      waitForConfirmations: 1,
+    });
+
+    if (result.error) {
+      console.error(`\n❌ Transaction failed: ${result.error}`);
+      process.exit(1);
+    }
+
+    console.log("\n✅ Transaction complete!");
+    console.log(`Status: ${result.status}`);
+    if (result.txHash) {
+      console.log(`Tx Hash: ${result.txHash}`);
+      console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
+    }
+    if (result.blockNumber) {
+      console.log(
+        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
+      );
+    }
+    console.log("\n💡 Check your aWETH balance at https://app.aave.com (testnet mode)");
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

@@ -27,6 +27,7 @@
 import { ethers } from "ethers";
 import { initializeFireblocks } from "@/client";
 import { createContractCall } from "@/fireblocks/contracts";
+import { monitorTransaction } from "@/fireblocks/monitor";
 
 // Aave's WETH contract on Sepolia
 const WETH_CONTRACT = "0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c";
@@ -41,7 +42,7 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const UNWRAP_AMOUNT = ethers.parseEther("0.02"); // Amount in wei
+    const UNWRAP_AMOUNT = ethers.parseEther("0.01"); // Amount in wei
 
     console.log("\nPreparing WETH unwrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);
@@ -64,16 +65,34 @@ async function main() {
       "Unwrap WETH to ETH on Sepolia"
     );
 
-    console.log("\n✅ Unwrap transaction created successfully!");
+    console.log("\n✅ Transaction created!");
     console.log("Transaction ID:", txResult.id);
-    console.log("Status:", txResult.status);
-    console.log("\nFull transaction details:");
-    console.log(JSON.stringify(txResult, null, 2));
 
-    console.log("\n📝 Next steps:");
-    console.log("1. Check transaction status in Fireblocks console");
-    console.log("2. After confirmation, your vault will have ETH (not WETH)");
-    console.log("3. WETH tokens will be burned and ETH returned to your vault");
+    if (!txResult.id) {
+      throw new Error("Transaction ID not returned from Fireblocks");
+    }
+
+    // Monitor transaction until completion
+    console.log("\n⏳ Waiting for transaction to complete...");
+    const result = await monitorTransaction(fireblocks, txResult.id, {
+      rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+      waitForConfirmations: 1,
+    });
+
+    if (result.error) {
+      console.error(`\n❌ Transaction failed: ${result.error}`);
+      process.exit(1);
+    }
+
+    console.log("\n✅ Transaction complete!");
+    console.log(`Status: ${result.status}`);
+    if (result.txHash) {
+      console.log(`Tx Hash: ${result.txHash}`);
+      console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
+    }
+    if (result.blockNumber) {
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
+    }
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

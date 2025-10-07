@@ -11,6 +11,7 @@
     "example:transfer-wallet": "ts-node -r tsconfig-paths/register src/examples/example-transfer-to-external-wallet.ts",
     "example:wrap-eth": "ts-node -r tsconfig-paths/register src/examples/example-wrap-eth-to-weth.ts",
     "example:unwrap-weth": "ts-node -r tsconfig-paths/register src/examples/example-unwrap-weth-to-eth.ts",
+    "example:approve-erc20": "ts-node -r tsconfig-paths/register src/examples/example-approve-erc20.ts",
     "example:aave-supply": "ts-node -r tsconfig-paths/register src/examples/example-aave-supply-weth.ts",
     "example:aave-withdraw": "ts-node -r tsconfig-paths/register src/examples/example-aave-withdraw-weth.ts",
     "build": "tsc",

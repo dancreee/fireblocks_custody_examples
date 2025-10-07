@@ -45,6 +45,7 @@ export async function createContractCall(
   note?: string
 ): Promise<CreateTransactionResponse> {
   const payload = {
+    operation: "CONTRACT_CALL" as const,
     assetId,
     source: {
       type: "VAULT_ACCOUNT" as const,
