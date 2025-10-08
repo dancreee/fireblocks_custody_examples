@@ -1,42 +1,39 @@
 /**
- * Example: Wrap ETH to WETH on Sepolia
+ * Example: Unwrap WETH to ETH on Sepolia
  *
- * This example demonstrates how to wrap native ETH into WETH (Wrapped ETH)
- * by depositing ETH into the WETH contract. This is step 1 before depositing
- * into DeFi protocols like Aave.
+ * This example demonstrates how to unwrap WETH (Wrapped ETH) back to native ETH
+ * by withdrawing from the WETH contract. Useful after withdrawing from DeFi protocols.
  *
  * Prerequisites:
  * - Fireblocks API credentials configured in .env
- * - Vault account with sufficient ETH_TEST5 balance
+ * - Vault account with WETH balance (from wrapping or DeFi withdrawals)
  *
  * WETH Contract (Aave's WETH on Sepolia):
  * - Address: 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c
- * - Function: deposit() payable
+ * - Function: withdraw(uint256 amount)
  *
  * ⚠️ SECURITY NOTE:
- * This is the safest DeFi interaction example as the WETH deposit() function
- * has no parameters - you always receive the WETH tokens directly.
- * The other examples (supply/withdraw) contain address parameters that
- * Fireblocks TAP policies cannot validate (they're encoded in contractCallData)
+ * This is safe - the withdraw() function sends ETH directly to msg.sender (your vault).
+ * No parameters control the recipient address.
  *
  * NOTE: Update the following values before running:
- * - srcVaultId: Source vault ID (currently "1")
- * - amount: Amount of ETH to wrap (currently "0.001")
+ * - srcVaultId: Source vault ID (currently "0")
+ * - amount: Amount of WETH to unwrap (currently "0.01")
  *
  * Usage:
- *   npm run example:wrap-eth
+ *   npm run example:unwrap-weth
  */
 
 import { ethers } from "ethers";
-import { initializeFireblocks } from "@/client";
-import { createContractCall } from "@/fireblocks/contracts";
-import { monitorTransaction } from "@/fireblocks/monitor";
+import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
+import { createContractCall } from "examples/Fireblocks-SDK-examples/fireblocks/contracts";
+import { monitorTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/monitor";
 
 // Aave's WETH contract on Sepolia
 const WETH_CONTRACT = "0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c";
 
-// WETH ABI - deposit function
-const WETH_ABI = ["function deposit() payable"];
+// WETH ABI - withdraw function
+const WETH_ABI = ["function withdraw(uint256 wad)"];
 
 async function main() {
   try {
@@ -45,27 +42,27 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const WRAP_AMOUNT = "0.01"; // Amount of ETH to wrap
+    const UNWRAP_AMOUNT = ethers.parseEther("0.01"); // Amount in wei
 
-    console.log("\nPreparing ETH wrap transaction...");
+    console.log("\nPreparing WETH unwrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);
-    console.log(`Amount: ${WRAP_AMOUNT} ETH`);
+    console.log(`Amount: ${ethers.formatEther(UNWRAP_AMOUNT)} WETH`);
 
-    // Encode the deposit function call
+    // Encode the withdraw function call
     const iface = new ethers.Interface(WETH_ABI);
-    const encodedData = iface.encodeFunctionData("deposit", []);
+    const encodedData = iface.encodeFunctionData("withdraw", [UNWRAP_AMOUNT]);
 
     console.log("\nEncoded contract call data:", encodedData);
 
     // Create the contract call transaction through Fireblocks
     const txResult = await createContractCall(
       fireblocks,
-      "ETH_TEST5", // Sepolia testnet asset
+      "ETH_TEST5", // Sepolia testnet asset (for gas)
       WETH_CONTRACT, // WETH contract address
       encodedData, // ABI-encoded function call
       VAULT_ID, // Source vault
-      WRAP_AMOUNT, // Amount to send (payable)
-      "Wrap ETH to WETH on Sepolia"
+      undefined, // No ETH value needed (not payable)
+      "Unwrap WETH to ETH on Sepolia"
     );
 
     console.log("\n✅ Transaction created!");
@@ -94,9 +91,7 @@ async function main() {
       console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
     }
     if (result.blockNumber) {
-      console.log(
-        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
-      );
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
     }
   } catch (error) {
     console.error("Error:", error);

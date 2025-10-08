@@ -20,10 +20,10 @@
  *   npm run example:transfer-wallet
  */
 
-import { initializeFireblocks } from "@/client";
-import { createTransaction } from "@/fireblocks/transactions";
-import { findExternalWalletByName } from "@/fireblocks/wallets";
-import { monitorTransaction } from "@/fireblocks/monitor";
+import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
+import { createTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/transactions";
+import { findExternalWalletByName } from "examples/Fireblocks-SDK-examples/fireblocks/wallets";
+import { monitorTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/monitor";
 
 async function main() {
   try {

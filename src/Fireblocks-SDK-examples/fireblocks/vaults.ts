@@ -1,5 +1,5 @@
 import { Fireblocks } from "@fireblocks/ts-sdk";
-import { VaultAccount, GetVaultAccountsOptions } from "@/types";
+import { VaultAccount, GetVaultAccountsOptions } from "examples/Fireblocks-SDK-examples/types";
 
 /**
  * Retrieves vault accounts from Fireblocks with optional filtering.

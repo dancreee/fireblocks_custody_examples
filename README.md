@@ -1,157 +1,67 @@
-# Fireblocks TypeScript SDK Examples
+# Fireblocks TypeScript Examples
 
-A collection of examples demonstrating the Fireblocks TypeScript SDK for custody operations. This project showcases common workflows including vault management, internal transfers, and external transactions.
+Examples demonstrating Fireblocks SDK and Web3 Provider for custody operations, vault management, and DeFi interactions.
 
-## Overview
-
-This project demonstrates:
-- Vault account management and filtering
-- Internal transfers between vaults
-- External transfers to one-time addresses
-- Transfers to whitelisted external wallets
-- Smart contract interactions (Aave V3 deposits)
-
-## Quick Start
-
-### 1. Install Dependencies
+## Setup
 
 ```bash
 npm install
-```
-
-### 2. Configure Credentials
-
-Copy the example environment file and add your Fireblocks credentials:
-
-```bash
 cp .env.example .env
+# Add your credentials to .env
 ```
 
-Update `.env` with your configuration:
+Required env vars: `FIREBLOCKS_API_KEY`, `FIREBLOCKS_SECRET_KEY_PATH`, `FIREBLOCKS_BASE_PATH`
 
-```env
-FIREBLOCKS_API_KEY=your-api-key-here
-FIREBLOCKS_SECRET_KEY_PATH=./fireblocks_secret.key
-FIREBLOCKS_BASE_PATH=sandbox
-```
+## Examples
 
-Place your Fireblocks secret key file in the project root (or update the path in `.env`).
-
-### 3. Run Examples
-
-Each example can be run independently:
+### Fireblocks SDK
 
 ```bash
-# List vault accounts filtered by name
-npm run example:list-default
-
-# List vault accounts that have assets
-npm run example:list-assets
-
-# Transfer between vault accounts
-npm run example:transfer-vault
-
-# Transfer to a one-time external address
-npm run example:transfer-address
-
-# Transfer to a whitelisted external wallet
-npm run example:transfer-wallet
-
-# Wrap ETH to WETH (step 1 for DeFi)
-npm run example:wrap-eth
-
-# Unwrap WETH back to ETH
-npm run example:unwrap-weth
-
-# Supply WETH to Aave V3 lending pool
-npm run example:aave-supply
-
-# Withdraw WETH from Aave V3 back to vault
-npm run example:aave-withdraw
+npm run example:list-default          # List vault accounts by name
+npm run example:list-assets           # List vaults with assets
+npm run example:transfer-vault        # Internal transfer
+npm run example:transfer-address      # Transfer to external address
+npm run example:transfer-wallet       # Transfer to whitelisted wallet
+npm run example:wrap-eth              # Wrap ETH to WETH
+npm run example:unwrap-weth           # Unwrap WETH to ETH
+npm run example:aave-supply           # Supply WETH to Aave V3
+npm run example:aave-withdraw         # Withdraw WETH from Aave V3
+npm run example:approve-erc20         # Approve ERC20 spending
 ```
 
-**Note:** Before running transfer examples, update the hardcoded values (asset IDs, vault IDs, addresses) in the example files to match your workspace configuration.
+### Web3 Provider (ethers.js)
+
+```bash
+npm run example:web3-send-tx          # Send ETH transaction
+npm run example:web3-wrap-eth         # Wrap ETH to WETH
+npm run example:web3-unwrap-weth      # Unwrap WETH to ETH
+npm run example:web3-approve-erc20    # Approve ERC20 spending
+npm run example:web3-aave-supply      # Supply WETH to Aave V3
+npm run example:web3-aave-withdraw    # Withdraw WETH from Aave V3
+```
+
+**Note:** Update vault IDs, addresses, and amounts in example files before running.
 
 ## Project Structure
 
 ```
 src/
-├── config.ts              # Environment variables and configuration
-├── client.ts              # Fireblocks SDK initialization
-├── types.ts               # TypeScript type definitions
-├── fireblocks/
-│   ├── vaults.ts          # Vault account operations
-│   ├── transactions.ts    # Transaction creation and management
-│   ├── wallets.ts         # External wallet operations
-│   └── contracts.ts       # Smart contract interaction helpers
-└── examples/
-    ├── example-list-default-accounts.ts
-    ├── example-list-accounts-with-assets.ts
-    ├── example-transfer-to-vault.ts
-    ├── example-transfer-to-external-address.ts
-    ├── example-transfer-to-external-wallet.ts
-    ├── example-wrap-eth-to-weth.ts
-    ├── example-unwrap-weth-to-eth.ts
-    ├── example-aave-supply-weth.ts
-    └── example-aave-withdraw-weth.ts
+├── config.ts                           # Environment config
+├── examples/
+│   ├── Fireblocks-SDK-examples/       # SDK-based examples
+│   └── Fireblocks-Web3-provider-examples/  # ethers.js Web3 provider examples
 ```
-
-### Architecture
-
-- **`config.ts`** - Loads environment variables (API keys, paths, environment selection)
-- **`client.ts`** - Initializes the Fireblocks SDK client with credentials
-- **`types.ts`** - Shared TypeScript interfaces for type safety
-- **`fireblocks/`** - Domain-specific helper functions organized by feature (includes contract interaction helpers)
-- **`examples/`** - Runnable example scripts demonstrating transfers and DeFi interactions
 
 ## Development
 
-### Build
-
-Compile TypeScript to JavaScript:
-
 ```bash
-npm run build
+npm run build      # Compile TypeScript
+npm run lint       # Run ESLint
+npm run format     # Format with Prettier
 ```
-
-Output will be in the `dist/` directory.
-
-### Code Quality
-
-This project uses ESLint and Prettier for code quality and formatting:
-
-```bash
-# Run linter
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
-
-# Format code
-npm run format
-```
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FIREBLOCKS_API_KEY` | Your Fireblocks API key | Required |
-| `FIREBLOCKS_SECRET_KEY_PATH` | Path to your secret key file | `./fireblocks_secret.key` |
-| `FIREBLOCKS_BASE_PATH` | Environment (`sandbox` or `production`) | `sandbox` |
-
-## Security Notes
-
-- Never commit your `.env` file or secret key files to version control
-- The `.gitignore` is configured to exclude these files
-- Use sandbox environment for testing before production
-- Review transaction policies and approval flows in your Fireblocks console
 
 ## Resources
 
-- [Fireblocks TypeScript SDK Documentation](https://developers.fireblocks.com/reference/typescript-sdk)
+- [Fireblocks TypeScript SDK](https://developers.fireblocks.com/reference/typescript-sdk)
+- [Fireblocks Web3 Provider](https://developers.fireblocks.com/docs/ethereum-development-web3-provider)
 - [Fireblocks API Reference](https://developers.fireblocks.com/reference)
-- [Fireblocks Developer Portal](https://developers.fireblocks.com/)
-
-## License
-
-This is a demonstration project for internal use.
