@@ -9,7 +9,7 @@
  * NOTE: Update the following values before running:
  * - vaultAccountId: Source vault account ID (currently 0)
  * - RECIPIENT_ADDRESS: Destination address (currently set to Vault ID 1)
- * - SEND_AMOUNT: Amount to send (currently "0.01")
+ * - SEND_AMOUNT: Amount to send (currently "0.001")
  *
  * Usage:
  *   npm run example:web3-send-tx

@@ -18,7 +18,7 @@
  *
  * NOTE: Update the following values before running:
  * - vaultAccountId: Source vault account ID (currently 0)
- * - SUPPLY_AMOUNT: Amount of WETH to deposit (currently "0.01")
+ * - SUPPLY_AMOUNT: Amount of WETH to deposit (currently "0.001")
  *
  * Usage:
  *   npm run example:web3-aave-supply
@@ -65,7 +65,7 @@ async function main() {
     console.log("Signer address:", signerAddress);
 
     // Configuration
-    const SUPPLY_AMOUNT = "0.01"; // Amount of WETH to supply
+    const SUPPLY_AMOUNT = "0.001"; // Amount of WETH to supply
 
     console.log("\nPreparing Aave supply transaction...");
     console.log(`Pool: ${AAVE_POOL}`);

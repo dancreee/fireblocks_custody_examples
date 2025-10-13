@@ -12,7 +12,7 @@
  *
  * NOTE: Update the following values before running:
  * - vaultAccountId: Source vault account ID (currently 0)
- * - WRAP_AMOUNT: Amount of ETH to wrap (currently "0.01")
+ * - WRAP_AMOUNT: Amount of ETH to wrap (currently "0.001")
  *
  * Usage:
  *   npm run example:web3-wrap-eth
@@ -55,7 +55,7 @@ async function main() {
     console.log("Signer address:", await signer.getAddress());
 
     // Configuration
-    const WRAP_AMOUNT = "0.01"; // Amount of ETH to wrap
+    const WRAP_AMOUNT = "0.001"; // Amount of ETH to wrap
 
     console.log("\nPreparing ETH wrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);

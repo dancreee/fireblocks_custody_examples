@@ -15,7 +15,7 @@
  * - vaultAccountId: Source vault account ID (currently 0)
  * - TOKEN_ADDRESS: The ERC20 token contract (currently WETH on Mainnet)
  * - SPENDER_ADDRESS: Who can spend your tokens (currently Aave Pool)
- * - APPROVE_AMOUNT: How much to approve (currently "0.01")
+ * - APPROVE_AMOUNT: How much to approve (currently "0.001")
  *
  * Usage:
  *   npm run example:web3-approve-erc20
@@ -59,7 +59,7 @@ async function main() {
     console.log("Signer address:", await signer.getAddress());
 
     // Configuration
-    const APPROVE_AMOUNT = "0.01"; // Amount to approve
+    const APPROVE_AMOUNT = "0.001"; // Amount to approve
 
     console.log("\nPreparing ERC20 approval transaction...");
     console.log(`Token: ${TOKEN_ADDRESS}`);

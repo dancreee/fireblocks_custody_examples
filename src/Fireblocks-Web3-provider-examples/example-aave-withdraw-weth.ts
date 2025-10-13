@@ -67,7 +67,7 @@ async function main() {
     // Configuration
     // Withdraw amount options:
     // 1. Use MAX_UINT256 to withdraw ALL available WETH
-    // 2. Use specific amount like "0.01"
+    // 2. Use specific amount like "0.001"
     const WITHDRAW_AMOUNT = MAX_UINT256; // Withdraw all
 
     console.log("\nPreparing Aave withdrawal transaction...");

@@ -16,7 +16,7 @@
  *
  * NOTE: Update the following values before running:
  * - vaultAccountId: Source vault account ID (currently 0)
- * - UNWRAP_AMOUNT: Amount of WETH to unwrap (currently "0.01")
+ * - UNWRAP_AMOUNT: Amount of WETH to unwrap (currently "0.001")
  *
  * Usage:
  *   npm run example:web3-unwrap-weth
@@ -59,7 +59,7 @@ async function main() {
     console.log("Signer address:", await signer.getAddress());
 
     // Configuration
-    const UNWRAP_AMOUNT = "0.01"; // Amount of WETH to unwrap
+    const UNWRAP_AMOUNT = "0.001"; // Amount of WETH to unwrap
 
     console.log("\nPreparing WETH unwrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);
