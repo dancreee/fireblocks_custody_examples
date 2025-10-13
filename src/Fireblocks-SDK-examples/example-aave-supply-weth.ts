@@ -23,7 +23,7 @@
  *
  * NOTE: Update the following values before running:
  * - srcVaultId: Source vault ID (currently "0")
- * - amount: Amount of WETH to deposit (currently "0.01")
+ * - amount: Amount of WETH to deposit (currently "0.001")
  * - onBehalfOf: Address to receive aTokens (your vault's Sepolia address)
  *
  * Usage:
@@ -51,7 +51,7 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const SUPPLY_AMOUNT = ethers.parseEther("0.01"); // Amount in wei
+    const SUPPLY_AMOUNT = ethers.parseEther("0.001"); // Amount in wei
 
     // IMPORTANT: Replace this with your vault's Sepolia address
     // This is where the aWETH tokens will be sent

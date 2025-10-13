@@ -46,7 +46,7 @@ async function main() {
 
     // Approve amount - match what you plan to supply
     // NOTE: You'll need to approve again if you want to supply more later
-    const APPROVE_AMOUNT = ethers.parseEther("0.01");
+    const APPROVE_AMOUNT = ethers.parseEther("0.001");
 
     console.log("\nPreparing ERC20 approval transaction...");
     console.log(`Token: ${TOKEN_ADDRESS}`);

@@ -11,7 +11,7 @@ import { TransactionDestination } from "examples/Fireblocks-SDK-examples/types";
  *
  * @param {Fireblocks} fireblocks - The initialized Fireblocks SDK client
  * @param {string} assetId - The asset identifier (e.g., "ETH_TEST5", "BTC", "USDC")
- * @param {string} amount - The amount to transfer as a string (e.g., "0.01")
+ * @param {string} amount - The amount to transfer as a string (e.g., "0.001")
  * @param {string} srcVaultId - The source vault account ID
  * @param {TransactionDestination} destination - The destination configuration
  * @param {string} destination.vaultId - Target vault account ID (for internal transfers)
@@ -24,15 +24,15 @@ import { TransactionDestination } from "examples/Fireblocks-SDK-examples/types";
  * @example
  * ```typescript
  * // Transfer to another vault
- * await createTransaction(fireblocks, "ETH_TEST5", "0.01", "0", { vaultId: "1" });
+ * await createTransaction(fireblocks, "ETH_TEST5", "0.001", "0", { vaultId: "1" });
  *
  * // Transfer to a one-time external address
- * await createTransaction(fireblocks, "ETH_TEST5", "0.01", "0", {
+ * await createTransaction(fireblocks, "ETH_TEST5", "0.001", "0", {
  *   oneTimeAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
  * });
  *
  * // Transfer to a whitelisted external wallet
- * await createTransaction(fireblocks, "ETH_TEST5", "0.01", "0", {
+ * await createTransaction(fireblocks, "ETH_TEST5", "0.001", "0", {
  *   externalWalletId: "wallet-123"
  * }, "Payment to vendor");
  * ```

@@ -3,7 +3,7 @@
  *
  * Prerequisites:
  * - Fireblocks API credentials configured in .env
- * - Vault account with sufficient ETH_TEST5 balance
+ * - Vault account with sufficient ETH balance
  * - Fireblocks TAP policy configured to allow transfers to destination address
  *
  * NOTE: Update the following values before running:
@@ -17,7 +17,7 @@
 
 import { ethers } from "ethers";
 import { FireblocksWeb3Provider, ChainId, ApiBaseUrl } from "@fireblocks/fireblocks-web3-provider";
-import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "@/config";
+import { API_KEY, SECRET_KEY_PATH, BASE_PATH, ETH_RPC_URL } from "@/config";
 import { readFileSync } from "fs";
 import * as path from "path";
 
@@ -32,9 +32,10 @@ async function main() {
     const eip1193Provider = new FireblocksWeb3Provider({
       apiKey: API_KEY,
       privateKey: apiSecret,
-      chainId: ChainId.SEPOLIA, // Sepolia testnet
+      chainId: ChainId.MAINNET, // Ethereum Mainnet
       vaultAccountIds: 0, // Source vault account ID
       apiBaseUrl: BASE_PATH === "sandbox" ? ApiBaseUrl.Sandbox : ApiBaseUrl.Production,
+      rpcUrl: ETH_RPC_URL, // Alchemy RPC for reading chain data
     });
 
     // Wrap with ethers.js provider
@@ -45,8 +46,9 @@ async function main() {
     console.log("Signer address:", await signer.getAddress());
 
     // Configuration
-    const RECIPIENT_ADDRESS = "0xD49249Ee400A874BdC28cc5F587A2154b2b3b047"; // Vault ID 1 Eth Sepolia Address
-    const SEND_AMOUNT = "0.01"; // Amount in ETH
+    // const RECIPIENT_ADDRESS = "0x3eB95e2D10615623DCc3CA156746c311F1b98433"; // Vault ID 0 Eth Address
+    const RECIPIENT_ADDRESS = "0xdABEAba6a4b1B9E4cC53f8A74d4c3F124b8dAddf"; // Vault ID 1 Eth Address
+    const SEND_AMOUNT = "0.001"; // Amount in ETH
 
     console.log("\nPreparing transaction...");
     console.log(`From: ${await signer.getAddress()}`);
@@ -61,7 +63,7 @@ async function main() {
 
     console.log("\n✅ Transaction sent!");
     console.log("Transaction hash:", tx.hash);
-    console.log(`Etherscan: https://sepolia.etherscan.io/tx/${tx.hash}`);
+    console.log(`Etherscan: https://etherscan.io/tx/${tx.hash}`);
 
     // Wait for confirmation
     console.log("\n⏳ Waiting for confirmation...");

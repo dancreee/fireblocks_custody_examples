@@ -45,7 +45,7 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const WRAP_AMOUNT = "0.01"; // Amount of ETH to wrap
+    const WRAP_AMOUNT = "0.001"; // Amount of ETH to wrap
 
     console.log("\nPreparing ETH wrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);

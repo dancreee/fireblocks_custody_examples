@@ -12,7 +12,7 @@
  *
  * NOTE: Update the following values before running:
  * - assetId: Currently set to "ETH_TEST5" (Sepolia testnet)
- * - amount: Currently set to "0.01"
+ * - amount: Currently set to "0.001"
  * - srcVaultId: Source vault ID (currently "0")
  * - wallet name: Currently "Dane Rabby Sepolia Testnet"
  *
@@ -43,7 +43,7 @@ async function main() {
     const txResult = await createTransaction(
       fireblocks,
       "ETH_TEST5",
-      "0.01",
+      "0.001",
       "0",
       { externalWalletId: walletId },
       "Send to external wallet on Sepolia"

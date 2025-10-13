@@ -18,7 +18,7 @@
  *
  * NOTE: Update the following values before running:
  * - srcVaultId: Source vault ID (currently "0")
- * - amount: Amount of WETH to unwrap (currently "0.01")
+ * - amount: Amount of WETH to unwrap (currently "0.001")
  *
  * Usage:
  *   npm run example:unwrap-weth
@@ -42,7 +42,7 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const UNWRAP_AMOUNT = ethers.parseEther("0.01"); // Amount in wei
+    const UNWRAP_AMOUNT = ethers.parseEther("0.001"); // Amount in wei
 
     console.log("\nPreparing WETH unwrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);

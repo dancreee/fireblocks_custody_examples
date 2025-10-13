@@ -3,11 +3,11 @@
  *
  * Prerequisites:
  * - Fireblocks API credentials configured in .env
- * - Vault account with sufficient ETH_TEST5 balance
+ * - Vault account with sufficient ETH balance
  * - Fireblocks TAP policy configured to allow contract calls to WETH
  *
- * WETH Contract (Aave's WETH on Sepolia):
- * - Address: 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c
+ * WETH Contract (Mainnet):
+ * - Address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
  * - Function: deposit() payable
  *
  * NOTE: Update the following values before running:
@@ -20,12 +20,12 @@
 
 import { ethers } from "ethers";
 import { FireblocksWeb3Provider, ChainId, ApiBaseUrl } from "@fireblocks/fireblocks-web3-provider";
-import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "@/config";
+import { API_KEY, SECRET_KEY_PATH, BASE_PATH, ETH_RPC_URL } from "@/config";
 import { readFileSync } from "fs";
 import * as path from "path";
 
-// Aave's WETH contract on Sepolia
-const WETH_CONTRACT = "0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c";
+// WETH contract on Mainnet
+const WETH_CONTRACT = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 // WETH ABI - deposit function
 const WETH_ABI = ["function deposit() payable"];
@@ -41,9 +41,10 @@ async function main() {
     const eip1193Provider = new FireblocksWeb3Provider({
       apiKey: API_KEY,
       privateKey: apiSecret,
-      chainId: ChainId.SEPOLIA, // Sepolia testnet
+      chainId: ChainId.MAINNET, // Ethereum Mainnet
       vaultAccountIds: 0, // Source vault account ID
       apiBaseUrl: BASE_PATH === "sandbox" ? ApiBaseUrl.Sandbox : ApiBaseUrl.Production,
+      rpcUrl: ETH_RPC_URL, // Alchemy RPC for reading chain data
     });
 
     // Wrap with ethers.js provider
@@ -70,7 +71,7 @@ async function main() {
 
     console.log("\n✅ Transaction sent!");
     console.log("Transaction hash:", tx.hash);
-    console.log(`Etherscan: https://sepolia.etherscan.io/tx/${tx.hash}`);
+    console.log(`Etherscan: https://etherscan.io/tx/${tx.hash}`);
 
     // Wait for confirmation
     console.log("\n⏳ Waiting for confirmation...");

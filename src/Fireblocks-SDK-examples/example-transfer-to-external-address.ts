@@ -12,7 +12,7 @@
  *
  * NOTE: Update the following values before running:
  * - assetId: Currently set to "ETH_TEST5" (Sepolia testnet)
- * - amount: Currently set to "0.01"
+ * - amount: Currently set to "0.001"
  * - srcVaultId: Source vault ID (currently "0")
  * - destination.oneTimeAddress: Target address (currently a test address)
  *
@@ -33,7 +33,7 @@ async function main() {
     const txResult = await createTransaction(
       fireblocks,
       "ETH_TEST5",
-      "0.01",
+      "0.001",
       "0",
       { oneTimeAddress: "0x0eFe1191e2e498aE1aaDddc12A7E9De36b60829e" },
       "Send to external address"

@@ -30,7 +30,7 @@ import { Fireblocks, CreateTransactionResponse } from "@fireblocks/ts-sdk";
  *   "0x1234...5678",
  *   data,
  *   "0",
- *   "0.01",
+ *   "0.001",
  *   "Deposit to protocol"
  * );
  * ```
