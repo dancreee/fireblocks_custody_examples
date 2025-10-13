@@ -4,8 +4,8 @@
  * Prerequisites:
  * - Fireblocks API credentials configured in .env
  * - Vault account with WETH tokens (from wrapping ETH first)
- * - WETH approval for the Aave Pool contract (run example:web3-approve-erc20 first)
- * - Fireblocks TAP policy / whitelist configured to allow contract calls to Aave Pool
+ * - WETH approval for the Aave V3 Pool Contract (run example:web3-approve-erc20 first)
+ * - Fireblocks TAP policy / whitelist configured to allow contract calls to Aave V3 Pool Contract
  *
  * Aave V3 Mainnet Addresses:
  * - Pool: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2
@@ -74,7 +74,7 @@ async function main() {
     console.log(`On Behalf Of: ${signerAddress} (your vault)`);
 
     console.log(
-      "\n⚠️  IMPORTANT: Before running this transaction, ensure you have approved the Aave Pool to spend your WETH!"
+      "\n⚠️  IMPORTANT: Before running this transaction, ensure you have approved the Aave V3 Pool Contract to spend your WETH!"
     );
     console.log("Run: npm run example:web3-approve-erc20");
 

@@ -7,14 +7,14 @@
  * - Fireblocks TAP policy configured to allow token approvals
  *
  * Common Use Cases:
- * - Approve Aave Pool to spend WETH before supply()
+ * - Approve Aave V3 Pool Contract to spend WETH before supply()
  * - Approve Uniswap Router to spend tokens before swap()
  * - Approve any DeFi protocol that needs token access
  *
  * NOTE: Update the following values before running:
  * - vaultAccountId: Source vault account ID (currently 0)
  * - TOKEN_ADDRESS: The ERC20 token contract (currently WETH on Mainnet)
- * - SPENDER_ADDRESS: Who can spend your tokens (currently Aave Pool)
+ * - SPENDER_ADDRESS: Who can spend your tokens (currently Aave V3 Pool Contract)
  * - APPROVE_AMOUNT: How much to approve (currently "0.001")
  *
  * Usage:
@@ -27,9 +27,9 @@ import { API_KEY, SECRET_KEY_PATH, BASE_PATH, ETH_RPC_URL } from "@/config";
 import { readFileSync } from "fs";
 import * as path from "path";
 
-// Example: Approve Aave Pool to spend WETH on Mainnet
+// Example: Approve Aave V3 to spend WETH on Mainnet
 const TOKEN_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH on Mainnet
-const SPENDER_ADDRESS = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"; // Aave Pool on Mainnet
+const SPENDER_ADDRESS = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"; // Aave V3 Pool Contract on Mainnet
 
 // ERC20 ABI - approve function
 const ERC20_ABI = ["function approve(address spender, uint256 amount) returns (bool)"];

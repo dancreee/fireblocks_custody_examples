@@ -4,7 +4,7 @@
  * Prerequisites:
  * - Fireblocks API credentials configured in .env
  * - Vault account with aWETH tokens (from depositing WETH into Aave)
- * - Fireblocks TAP policy configured to allow contract calls to Aave Pool
+ * - Fireblocks TAP policy configured to allow contract calls to Aave V3 Pool Contract
  *
  * Aave V3 Mainnet Addresses:
  * - Pool: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2
