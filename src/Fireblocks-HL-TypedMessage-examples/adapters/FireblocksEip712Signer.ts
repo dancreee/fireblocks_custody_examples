@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { Fireblocks, TransactionOperation, TransactionStateEnum, TransactionRequest, TransferPeerPathType } from "@fireblocks/ts-sdk";
-import crypto from "crypto";
 import { readFileSync } from "fs";
 import * as path from "path";
 import { FireblocksSignerConfig } from "../types";
@@ -16,7 +15,6 @@ import { FireblocksSignerConfig } from "../types";
  * - Derives address from Fireblocks vault automatically
  * - Signs EIP-712 messages via Fireblocks API
  * - Polls for signature completion
- * - Assembles 65-byte signatures from r, s, v components
  */
 export class FireblocksEip712Signer implements ethers.Signer {
   private fireblocks: Fireblocks;
@@ -93,16 +91,8 @@ export class FireblocksEip712Signer implements ethers.Signer {
   ): Promise<string> {
     const address = await this.getAddress();
 
-    // Generate human-readable note for Fireblocks audit trail
     const note = this.generateTransactionNote(domain, message);
-
-    // Build a full EIP-712 object (domain/types/primaryType/message)
     const typedDataObject = this.buildTypedDataObject(domain, types, message);
-
-    // Basic logging per implementation plan
-    const domainName = domain.name || "Unknown";
-    const chainId = domain.chainId || "Unknown";
-    console.log(`[FB-Signer] signTypedData → domain=${domainName} chainId=${chainId} addr=${address}`);
 
     try {
       // Create Fireblocks TYPED_MESSAGE transaction
@@ -130,11 +120,8 @@ export class FireblocksEip712Signer implements ethers.Signer {
         transactionRequest,
       });
 
-      // Poll for completion
       const txId = createResponse.data.id!;
-      console.log(`[FB-Signer] created txId=${txId}`);
       const signature = await this.pollForSignature(txId);
-      console.log(`[FB-Signer] COMPLETED txId=${txId}`);
       return signature;
     } catch (error: any) {
       const details = this.formatFireblocksError(error);
@@ -157,24 +144,36 @@ export class FireblocksEip712Signer implements ethers.Signer {
         const response = await this.fireblocks.transactions.getTransaction({ txId });
         txInfo = response.data;
       } catch (err: any) {
-        const details = this.formatFireblocksError(err);
-        console.log(`[FB-Signer] polling error txId=${txId} → ${details}`);
         continue; // transient poll error; try again
       }
       const status = txInfo.status;
 
       if (status === TransactionStateEnum.Completed) {
-        // Extract signature from signedMessages
         const signedMessages = (txInfo as any).signedMessages;
         if (!signedMessages || signedMessages.length === 0) {
           throw new Error("Transaction completed but no signed messages found");
         }
 
-        const fbSigContainer = signedMessages[0];
-        const normalized = this.normalizeSignatureFromFireblocks(fbSigContainer);
-        if (!normalized) {
-          const availableKeys = Object.keys(fbSigContainer || {}).join(",");
-          throw new Error(`Invalid signature format from Fireblocks (keys: ${availableKeys})`);
+        const sig = signedMessages[0]?.signature;
+        if (!sig || typeof sig !== "object") {
+          throw new Error(`Invalid signature format from Fireblocks: expected object, got ${typeof sig}`);
+        }
+
+        // Fireblocks returns { r, s, v, fullSig }
+        // fullSig is 64 bytes (128 hex chars), v needs to be appended
+        const fullSig = sig.fullSig;
+        if (typeof fullSig !== "string" || fullSig.length !== 128) {
+          throw new Error(`Invalid fullSig from Fireblocks: expected 128 hex chars, got ${fullSig?.length || 0}`);
+        }
+
+        // v is 0 or 1, normalize to 27 or 28 for EIP-712
+        const v = typeof sig.v === "number" ? sig.v : 0;
+        const vNormalized = v + 27;
+        const vHex = vNormalized.toString(16);
+
+        const normalized = `0x${fullSig}${vHex}`;
+        if (normalized.length !== 132) {
+          throw new Error(`Invalid signature length: expected 132 chars (0x + 130 hex), got ${normalized.length}`);
         }
         return normalized;
       }
@@ -190,25 +189,15 @@ export class FireblocksEip712Signer implements ethers.Signer {
         throw new Error(`Transaction ${status.toLowerCase()}: ${sub}${sys}`);
       }
 
-      // Periodic status log to aid debugging
-      if (attempt % 3 === 0) {
-        console.log(`[FB-Signer] polling txId=${txId} status=${status}`);
-      }
-
       // Continue polling for other states (SUBMITTED, PENDING_SIGNATURE, etc.)
     }
 
     throw new Error(`Signature polling timeout after ${maxAttempts * pollInterval / 1000} seconds`);
   }
 
-  /**
-   * Generate human-readable note for Fireblocks transaction audit trail.
-   * Examples: "HL order: ETH-PERP buy 0.5" or "HL withdrawal: 10 USDC"
-   */
   private generateTransactionNote(domain: ethers.TypedDataDomain, message: Record<string, any>): string {
     const domainName = domain.name || "Unknown";
 
-    // Try to extract meaningful info from message
     if (message.action) {
       const action = message.action;
       if (action.type === "order" && action.orders) {
@@ -224,20 +213,13 @@ export class FireblocksEip712Signer implements ethers.Signer {
       }
     }
 
-    // Fallback
     return `HL EIP-712 signature: ${domainName}`;
   }
 
-  /**
-   * Sleep helper for polling
-   */
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  /**
-   * Build a well-formed EIP-712 object ensuring EIP712Domain exists when missing.
-   */
   private buildTypedDataObject(
     domain: ethers.TypedDataDomain,
     types: Record<string, ethers.TypedDataField[]>,
@@ -259,104 +241,8 @@ export class FireblocksEip712Signer implements ethers.Signer {
     return { types: typesWithDomain, domain, primaryType, message };
   }
 
-  /**
-   * Normalize Fireblocks signature shapes to a 65-byte 0x-prefixed hex string.
-   * Accepts r/s/v objects, fullSig, or raw hex string (64-byte or 65-byte).
-   */
-  private normalizeSignatureFromFireblocks(signedMessageEntry: any): string | null {
-    if (!signedMessageEntry) return null;
-    const sig = signedMessageEntry.signature;
-
-    // Case 1: signature is already a hex string
-    if (typeof sig === "string") {
-      const normalized = this.ensureHexWith0x(sig);
-      // If it's 64 bytes (128 hex chars + 0x), add default v=27
-      if (normalized.length === 130) {
-        return `${normalized}1b`; // 27 in hex
-      }
-      return normalized;
-    }
-
-    // Case 2: fullSig provided
-    if (sig && typeof sig.fullSig === "string") {
-      const normalized = this.ensureHexWith0x(sig.fullSig);
-      // If it's 64 bytes (128 hex chars + 0x), add default v=27
-      if (normalized.length === 130) {
-        return `${normalized}1b`; // 27 in hex
-      }
-      return normalized;
-    }
-
-    // Case 3: r/s/v provided (or just r/s)
-    if (sig && (sig.r || sig.s)) {
-      const r = this.strip0x(sig.r || "").padStart(64, "0");
-      const s = this.strip0x(sig.s || "").padStart(64, "0");
-
-      let vNum: number;
-      if (sig.v !== undefined) {
-        // v is explicitly provided
-        if (typeof sig.v === "string") {
-          vNum = sig.v.startsWith("0x") ? parseInt(sig.v, 16) : parseInt(sig.v, 10);
-        } else {
-          vNum = Number(sig.v);
-        }
-        if (!Number.isFinite(vNum)) {
-          // Invalid v, use default
-          vNum = 27;
-        }
-      } else {
-        // v not provided, use default for EIP-712
-        vNum = 27;
-      }
-
-      const vHex = vNum.toString(16).padStart(2, "0");
-      const combined = `0x${r}${s}${vHex}`;
-
-      // Strict validation: signature must be exactly 132 chars (0x + 130 hex chars = 65 bytes)
-      if (combined.length !== 132) {
-        throw new Error(
-          `Invalid signature length: expected 132 chars (0x + 130 hex), got ${combined.length}. ` +
-          `Signature: ${combined}`
-        );
-      }
-      return combined;
-    }
-
-    return null;
-  }
-
-  private ensureHexWith0x(value: string): string {
-    return value.startsWith("0x") ? value : `0x${value}`;
-  }
-
-  private strip0x(value: string): string {
-    return value && value.startsWith("0x") ? value.slice(2) : value || "";
-  }
-
-  /**
-   * Best-effort extraction of useful error details from Fireblocks SDK/HTTP client errors.
-   */
   private formatFireblocksError(error: any): string {
-    try {
-      // Axios-like shape
-      const status = error?.response?.status;
-      const statusText = error?.response?.statusText;
-      const data = error?.response?.data;
-      const message = error?.message || error?.toString?.() || "Unknown error";
-      if (status || data) {
-        const body = typeof data === "string" ? data : JSON.stringify(data);
-        return `[${status || ""} ${statusText || ""}] ${message} ${body ? `- body: ${body}` : ""}`.trim();
-      }
-      // Fetch-like shape
-      const fbCode = error?.code || error?.name;
-      const fbMsg = error?.message;
-      if (fbCode || fbMsg) {
-        return `${fbCode || ""} ${fbMsg || ""}`.trim();
-      }
-      return message;
-    } catch {
-      return error?.message || "Unexpected error";
-    }
+    return error?.message || String(error);
   }
 
   // Required ethers.Signer methods (not used for HL, throw errors)
