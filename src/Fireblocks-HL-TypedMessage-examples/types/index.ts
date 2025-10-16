@@ -19,12 +19,3 @@ export interface TxResult {
   gasUsed: BigNumber;
   outputAmount: BigNumber;
 }
-
-/**
- * Network configuration stub for prototype
- */
-export interface NetworkConfig {
-  hyperliquid: {
-    withdrawFee: BigNumber;
-  };
-}

@@ -21,8 +21,6 @@ import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "@/config";
 const VAULT_ACCOUNT_ID = 0;
 
 async function main() {
-  console.log("=== Stage 3: Fireblocks EIP-712 Signing Test ===\n");
-
   try {
     // 1) Instantiate signer
     const signer = new FireblocksEip712Signer({
@@ -57,7 +55,7 @@ async function main() {
       value: 12345,
     };
 
-    console.log("Requesting signature via Fireblocks mobile app...\n");
+    console.log("Requesting signature via Fireblocks\n");
 
     // 3) Sign via Fireblocks
     const signature = await signer.signTypedData(domain, types, message);
@@ -75,15 +73,11 @@ async function main() {
     console.log("\n✓ Signature received and validated");
     console.log(`Length: ${bytes.length} hex chars (65-byte r,s,v signature)`);
     console.log(`Signature: ${signature}`);
-    console.log("\nDone.");
     process.exit(0);
   } catch (error: any) {
-    console.error("\n❌ FAILED");
     console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }
 
 main();
-
-
