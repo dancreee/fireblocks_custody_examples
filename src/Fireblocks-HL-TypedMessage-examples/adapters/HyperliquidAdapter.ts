@@ -112,11 +112,24 @@ export class HyperliquidAdapter {
 
   async initiateWithdrawal(amount: BigNumber): Promise<TxResult> {
     try {
+      const account = await this.getAddress();
       const exchangeClient = await this.ensureExchangeClient();
 
-      // TODO: Implement withdrawal with Fireblocks signing
-      // This will be implemented in Stage 6
-      throw new Error("initiateWithdrawal not yet implemented (Stage 6)");
+      // Hyperliquid charges a $1 USDC fee for withdrawals
+      const HL_WITHDRAW_FEE_USDC = new BigNumber(1);
+
+      // Call withdraw3 API to initiate withdrawal to Arbitrum
+      await exchangeClient.withdraw3({
+        destination: account,
+        amount: amount.toString(),
+      });
+
+      // Return result with fee deducted from output amount
+      return {
+        hash: "",
+        gasUsed: new BigNumber(0),
+        outputAmount: amount.minus(HL_WITHDRAW_FEE_USDC),
+      };
     } catch (e) {
       throw e;
     }

@@ -68,7 +68,6 @@ async function main() {
       }
     }
 
-    await adapter.closeConnection();
     process.exit(0);
   } catch (error: any) {
     console.error(`Error: ${error.message || error}`);
