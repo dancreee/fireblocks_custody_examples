@@ -139,13 +139,8 @@ export class FireblocksEip712Signer implements ethers.Signer {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await this.sleep(pollInterval);
 
-      let txInfo: any;
-      try {
-        const response = await this.fireblocks.transactions.getTransaction({ txId });
-        txInfo = response.data;
-      } catch (err: any) {
-        continue; // transient poll error; try again
-      }
+      const response = await this.fireblocks.transactions.getTransaction({ txId });
+      const txInfo: any = response.data;
       const status = txInfo.status;
 
       if (status === TransactionStateEnum.Completed) {
@@ -198,19 +193,17 @@ export class FireblocksEip712Signer implements ethers.Signer {
   private generateTransactionNote(domain: ethers.TypedDataDomain, message: Record<string, any>): string {
     const domainName = domain.name || "Unknown";
 
-    if (message.action) {
-      const action = message.action;
-      if (action.type === "order" && action.orders) {
-        const order = action.orders[0];
-        const side = order.isBuy ? "buy" : "sell";
-        const coin = order.coin || "unknown";
-        const size = order.sz || "unknown";
-        return `HL order: ${coin} ${side} ${size}`;
-      }
-      if (action.type === "withdraw3" || action.type === "withdraw") {
-        const amount = action.amount || action.usd || "unknown";
-        return `HL withdrawal: ${amount} USDC`;
-      }
+    // Note: @nktkas/hyperliquid hashes the action data into message.connectionId,
+    // so the actual order/withdrawal details are not available in the EIP-712 message.
+    // The message only contains { source: "a", connectionId: hash(action) }
+
+    // For L1 actions (orders, cancels, etc), the message structure is:
+    // { source: "a" | "b", connectionId: bytes32 }
+    // The connectionId is a hash that includes the action, nonce, and optionally vault/expiry
+
+    if (message.connectionId) {
+      const connId = message.connectionId.toString().substring(0, 10);
+      return `HL L1 action signature (${domainName}, id: ${connId}...)`;
     }
 
     return `HL EIP-712 signature: ${domainName}`;

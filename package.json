@@ -25,6 +25,7 @@
     "example:hl-test-signing": "ts-node -r tsconfig-paths/register src/Fireblocks-HL-TypedMessage-examples/example-test-signing.ts",
     "example:hl-markets": "ts-node -r tsconfig-paths/register src/Fireblocks-HL-TypedMessage-examples/example-hl-markets.ts",
     "example:hl-account": "ts-node -r tsconfig-paths/register src/Fireblocks-HL-TypedMessage-examples/example-hl-account.ts",
+    "example:hl-order": "ts-node -r tsconfig-paths/register src/Fireblocks-HL-TypedMessage-examples/example-hl-order.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",

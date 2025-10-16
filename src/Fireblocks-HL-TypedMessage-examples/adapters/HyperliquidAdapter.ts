@@ -65,12 +65,46 @@ export class HyperliquidAdapter {
 
   async adjustExposure(amount: BigNumber): Promise<TxResult> {
     try {
-      const ethInfo = await this.getPerpInfo(HL_ASSET_INDICES.ETH);
+      const ethInfo: any = await this.getPerpInfo(HL_ASSET_INDICES.ETH);
       const exchangeClient = await this.ensureExchangeClient();
 
-      // TODO: Implement order placement with Fireblocks signing
-      // This will be implemented in Stage 5
-      throw new Error("adjustExposure not yet implemented (Stage 5)");
+      // Determine order direction: positive amount = long, negative = short
+      const isLong = amount.isPositive();
+      const size = amount.abs().decimalPlaces(4).toString();
+
+      // Apply slippage: buy higher, sell lower
+      const slippageFactor = isLong ? 1.005 : 0.995;
+      const limitPrice = new BigNumber(ethInfo.markPx)
+        .times(slippageFactor)
+        .decimalPlaces(1)
+        .toString();
+
+      const res = await exchangeClient.order({
+        orders: [
+          {
+            a: HL_ASSET_INDICES.ETH,
+            b: isLong, // true = buy/long, false = sell/short
+            p: limitPrice,
+            s: size,
+            r: false,
+            t: { limit: { tif: "Ioc" } },
+          },
+        ],
+        grouping: "na",
+      });
+
+      // Check for errors and throw them if found
+      for (const status of res.response.data.statuses) {
+        if ("error" in status) {
+          throw new Error((status as { error: string }).error);
+        }
+      }
+
+      return {
+        hash: "",
+        gasUsed: new BigNumber(0),
+        outputAmount: amount,
+      };
     } catch (e) {
       throw e;
     }
@@ -88,16 +122,17 @@ export class HyperliquidAdapter {
     }
   }
 
-  async closeConnection() {
-    // No-op for now
-  }
-
   private async ensureExchangeClient(): Promise<hl.ExchangeClient> {
     if (this.exchangeClient) {
       return this.exchangeClient;
     }
 
-    // Stage 5: Initialize ExchangeClient with Fireblocks signer
-    throw new Error("ExchangeClient initialization not yet implemented (Stage 5)");
+    // Initialize ExchangeClient with Fireblocks signer
+    this.exchangeClient = new hl.ExchangeClient({
+      wallet: this.signer,
+      transport: new hl.HttpTransport(),
+    });
+
+    return this.exchangeClient;
   }
 }
