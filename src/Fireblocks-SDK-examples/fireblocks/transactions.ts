@@ -1,5 +1,5 @@
 import { Fireblocks, TransferPeerPathType, CreateTransactionResponse } from "@fireblocks/ts-sdk";
-import { TransactionDestination } from "examples/Fireblocks-SDK-examples/types";
+import { TransactionDestination } from "../types";
 
 /**
  * Creates a transaction to transfer assets from a vault account to various destination types.

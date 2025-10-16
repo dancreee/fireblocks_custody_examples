@@ -25,9 +25,9 @@
  */
 
 import { ethers } from "ethers";
-import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
-import { createContractCall } from "examples/Fireblocks-SDK-examples/fireblocks/contracts";
-import { monitorTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/monitor";
+import { initializeFireblocks } from "./client";
+import { createContractCall } from "./fireblocks/contracts";
+import { monitorTransaction } from "./fireblocks/monitor";
 
 // Example: Approve Aave Pool to spend WETH on Sepolia
 const TOKEN_ADDRESS = "0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c"; // WETH on Sepolia

@@ -28,9 +28,9 @@
  */
 
 import { ethers } from "ethers";
-import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
-import { createContractCall } from "examples/Fireblocks-SDK-examples/fireblocks/contracts";
-import { monitorTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/monitor";
+import { initializeFireblocks } from "./client";
+import { createContractCall } from "./fireblocks/contracts";
+import { monitorTransaction } from "./fireblocks/monitor";
 
 // Aave's WETH contract on Sepolia
 const WETH_CONTRACT = "0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c";

@@ -31,9 +31,9 @@
  */
 
 import { ethers } from "ethers";
-import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
-import { createContractCall } from "examples/Fireblocks-SDK-examples/fireblocks/contracts";
-import { monitorTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/monitor";
+import { initializeFireblocks } from "./client";
+import { createContractCall } from "./fireblocks/contracts";
+import { monitorTransaction } from "./fireblocks/monitor";
 
 // Aave V3 Sepolia contract addresses
 const AAVE_POOL = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";

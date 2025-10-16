@@ -1,5 +1,5 @@
 import { Fireblocks } from "@fireblocks/ts-sdk";
-import { VaultAccount, GetVaultAccountsOptions } from "examples/Fireblocks-SDK-examples/types";
+import { VaultAccount, GetVaultAccountsOptions } from "../types";
 
 /**
  * Retrieves vault accounts from Fireblocks with optional filtering.
@@ -43,7 +43,7 @@ export async function getVaultAccounts(
   // Filter to only accounts with assets if requested
   if (options.onlyWithAssets) {
     accounts = accounts.filter((account) => {
-      return account.assets?.some((asset) => parseFloat(asset.total || "0") > 0);
+      return account.assets?.some((asset: any) => parseFloat(asset.total || "0") > 0);
     });
   }
 

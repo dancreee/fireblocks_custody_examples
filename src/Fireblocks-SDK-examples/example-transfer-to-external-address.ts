@@ -20,9 +20,9 @@
  *   npm run example:transfer-address
  */
 
-import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
-import { createTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/transactions";
-import { monitorTransaction } from "examples/Fireblocks-SDK-examples/fireblocks/monitor";
+import { initializeFireblocks } from "./client";
+import { createTransaction } from "./fireblocks/transactions";
+import { monitorTransaction } from "./fireblocks/monitor";
 
 async function main() {
   try {

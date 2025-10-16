@@ -12,8 +12,8 @@
  *   npm run example:list-assets
  */
 
-import { initializeFireblocks } from "examples/Fireblocks-SDK-examples/client";
-import { getVaultAccounts } from "examples/Fireblocks-SDK-examples/fireblocks/vaults";
+import { initializeFireblocks } from "./client";
+import { getVaultAccounts } from "./fireblocks/vaults";
 
 async function main() {
   try {
