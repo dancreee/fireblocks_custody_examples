@@ -1,7 +1,7 @@
 import { Fireblocks, BasePath } from "@fireblocks/ts-sdk";
 import { readFileSync } from "fs";
 import * as path from "path";
-import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "@/config";
+import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "../config";
 
 /**
  * Initializes and returns a configured Fireblocks SDK client instance.

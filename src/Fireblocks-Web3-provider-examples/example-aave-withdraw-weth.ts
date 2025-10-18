@@ -25,7 +25,7 @@
 
 import { ethers } from "ethers";
 import { FireblocksWeb3Provider, ChainId, ApiBaseUrl } from "@fireblocks/fireblocks-web3-provider";
-import { API_KEY, SECRET_KEY_PATH, BASE_PATH, ETH_RPC_URL } from "@/config";
+import { API_KEY, SECRET_KEY_PATH, BASE_PATH, ETH_RPC_URL } from "../config";
 import { readFileSync } from "fs";
 import * as path from "path";
 

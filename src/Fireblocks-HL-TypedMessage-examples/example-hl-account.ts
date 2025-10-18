@@ -10,7 +10,7 @@
 
 import { HyperliquidAdapter } from "./adapters/HyperliquidAdapter";
 import { BasePath } from "@fireblocks/ts-sdk";
-import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "@/config";
+import { API_KEY, SECRET_KEY_PATH, BASE_PATH } from "../config";
 
 const VAULT_ACCOUNT_ID = 0;
 
