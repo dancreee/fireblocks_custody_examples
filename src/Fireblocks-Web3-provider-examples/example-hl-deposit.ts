@@ -5,7 +5,7 @@
  * - Fireblocks API credentials configured in .env
  * - Vault account with USDC balance on Arbitrum
  * - Minimum 5 USDC required (amounts less than 5 USDC will be lost)
- * - Fireblocks TAP policy configured to allow ERC20 transfers 
+ * - Fireblocks TAP policy configured to allow ERC20 transfers
  * - (Note this requires you whitelist the Bridge2 contract as "External" with "USD Coin" address, NOT "Contract" with "ETH/Arb chain" address)
  *
  * How it works:
@@ -76,7 +76,7 @@ async function main() {
     if (depositAmountNum < MIN_DEPOSIT_USDC) {
       throw new Error(
         `Deposit amount must be at least ${MIN_DEPOSIT_USDC} USDC. ` +
-        `Amounts less than ${MIN_DEPOSIT_USDC} USDC will be lost.`
+          `Amounts less than ${MIN_DEPOSIT_USDC} USDC will be lost.`
       );
     }
 
@@ -112,7 +112,6 @@ async function main() {
     console.log(`\n✅ Transaction confirmed.`);
     console.log(`Block: ${receipt?.blockNumber} | Gas: ${receipt?.gasUsed.toString()}`);
     console.log(`💡 Run: npm run example:hl-account (to verify balance)`);
-
   } catch (error: any) {
     console.error("\n❌ Error:", error.message || error);
     process.exit(1);

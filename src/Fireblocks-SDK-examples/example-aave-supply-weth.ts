@@ -120,9 +120,7 @@ async function main() {
       console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
     }
     if (result.blockNumber) {
-      console.log(
-        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
-      );
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
     }
     console.log("\n💡 Check your aWETH balance at https://app.aave.com (testnet mode)");
   } catch (error) {

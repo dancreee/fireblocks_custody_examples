@@ -58,7 +58,9 @@ async function main() {
 
     // Validate balance
     if (withdrawable.isLessThanOrEqualTo(HL_WITHDRAW_FEE_USDC)) {
-      console.error(`❌ Insufficient balance. Need more than ${HL_WITHDRAW_FEE_USDC} USDC to withdraw.`);
+      console.error(
+        `❌ Insufficient balance. Need more than ${HL_WITHDRAW_FEE_USDC} USDC to withdraw.`
+      );
       process.exit(1);
     }
 
@@ -78,7 +80,9 @@ async function main() {
     }
 
     if (amount.isLessThanOrEqualTo(HL_WITHDRAW_FEE_USDC)) {
-      console.error(`❌ Amount must be greater than withdrawal fee (${HL_WITHDRAW_FEE_USDC} USDC).`);
+      console.error(
+        `❌ Amount must be greater than withdrawal fee (${HL_WITHDRAW_FEE_USDC} USDC).`
+      );
       process.exit(1);
     }
 

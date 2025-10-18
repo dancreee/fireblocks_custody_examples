@@ -84,7 +84,6 @@ async function main() {
     console.log(`Gas used: ${receipt?.gasUsed.toString()}`);
     console.log(`Status: ${receipt?.status === 1 ? "Success" : "Failed"}`);
     console.log(`\n💡 Successfully unwrapped ${UNWRAP_AMOUNT} WETH to ETH!`);
-
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

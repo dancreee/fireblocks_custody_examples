@@ -88,7 +88,6 @@ async function main() {
     console.log(`Gas used: ${receipt?.gasUsed.toString()}`);
     console.log(`Status: ${receipt?.status === 1 ? "Success" : "Failed"}`);
     console.log(`\n💡 The spender (${SPENDER_ADDRESS}) can now spend your tokens!`);
-
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

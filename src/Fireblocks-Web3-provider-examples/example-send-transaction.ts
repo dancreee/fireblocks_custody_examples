@@ -73,7 +73,6 @@ async function main() {
     console.log(`Block number: ${receipt?.blockNumber}`);
     console.log(`Gas used: ${receipt?.gasUsed.toString()}`);
     console.log(`Status: ${receipt?.status === 1 ? "Success" : "Failed"}`);
-
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

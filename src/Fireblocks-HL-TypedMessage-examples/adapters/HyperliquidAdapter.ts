@@ -10,7 +10,7 @@ export enum HL_ASSET_INDICES {
 }
 
 /**
- * HyperliquidAdapter with Fireblocks custody
+ * Hyperliquid adapter using Fireblocks custody for EIP-712 signing.
  */
 export class HyperliquidAdapter {
   private account: string | null = null;
@@ -27,9 +27,7 @@ export class HyperliquidAdapter {
     });
   }
 
-  /**
-   * Get the Hyperliquid account address (derived from Fireblocks vault)
-   */
+  /** Returns account address (derived from Fireblocks vault). */
   async getAddress(): Promise<string> {
     if (this.account) {
       return this.account;
@@ -38,17 +36,20 @@ export class HyperliquidAdapter {
     return this.account;
   }
 
+  /** Fetches account state (balance, positions, margin). */
   async getAccountInfo() {
     const account = await this.getAddress();
     const accountState = await this.infoClient.clearinghouseState({ user: account });
     return accountState;
   }
 
+  /** Returns all perp market metadata and contexts. */
   async getPerpMarkets() {
     const [meta, contexts] = await this.infoClient.metaAndAssetCtxs();
     return [meta.universe, contexts];
   }
 
+  /** Returns perp info for a specific asset index. */
   async getPerpInfo(index: HL_ASSET_INDICES) {
     const [meta, contexts] = await this.getPerpMarkets();
     if (index < 0 || index >= meta.length) {
@@ -57,12 +58,17 @@ export class HyperliquidAdapter {
     return contexts[index];
   }
 
+  /** Fetches open orders for this account. */
   async getOpenOrders() {
     const account = await this.getAddress();
     const orders = await this.infoClient.frontendOpenOrders({ user: account });
     return orders;
   }
 
+  /**
+   * Places IOC order for ETH perp (long if amount > 0, short if < 0).
+   * Applies 0.5% slippage. Requires Fireblocks approval.
+   */
   async adjustExposure(amount: BigNumber): Promise<TxResult> {
     try {
       const ethInfo: any = await this.getPerpInfo(HL_ASSET_INDICES.ETH);
@@ -110,6 +116,10 @@ export class HyperliquidAdapter {
     }
   }
 
+  /**
+   * Withdraws USDC to Arbitrum. Deducts $1 fee.
+   * Requires Fireblocks approval.
+   */
   async initiateWithdrawal(amount: BigNumber): Promise<TxResult> {
     try {
       const account = await this.getAddress();

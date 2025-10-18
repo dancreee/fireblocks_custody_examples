@@ -49,9 +49,7 @@ async function main() {
 
     // Get current position
     const accountInfo = await adapter.getAccountInfo();
-    const ethPosition = accountInfo.assetPositions.find(
-      (p: any) => p.position.coin === "ETH"
-    );
+    const ethPosition = accountInfo.assetPositions.find((p: any) => p.position.coin === "ETH");
 
     const ethInfo: any = await adapter.getPerpInfo(1);
     console.log(`ETH Mark Price: ${ethInfo.markPx}`);

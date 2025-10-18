@@ -55,10 +55,7 @@ async function main() {
 
     // Encode the approve function call
     const iface = new ethers.utils.Interface(ERC20_ABI);
-    const encodedData = iface.encodeFunctionData("approve", [
-      SPENDER_ADDRESS,
-      APPROVE_AMOUNT,
-    ]);
+    const encodedData = iface.encodeFunctionData("approve", [SPENDER_ADDRESS, APPROVE_AMOUNT]);
 
     console.log("\nEncoded contract call data:", encodedData);
 
@@ -99,14 +96,10 @@ async function main() {
       console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
     }
     if (result.blockNumber) {
-      console.log(
-        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
-      );
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
     }
 
-    console.log(
-      `\n💡 The spender (${SPENDER_ADDRESS}) can now spend your tokens!`
-    );
+    console.log(`\n💡 The spender (${SPENDER_ADDRESS}) can now spend your tokens!`);
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

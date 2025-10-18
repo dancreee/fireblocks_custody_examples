@@ -94,9 +94,7 @@ async function main() {
       console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
     }
     if (result.blockNumber) {
-      console.log(
-        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
-      );
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
     }
   } catch (error) {
     console.error("Error:", error);

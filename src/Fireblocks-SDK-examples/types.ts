@@ -23,7 +23,7 @@ export interface GetVaultAccountsOptions {
 }
 
 export interface TransactionDestination {
-  vaultId?: string;           // For vault account transfers
-  externalWalletId?: string;  // For whitelisted external wallets
-  oneTimeAddress?: string;    // For one-time external addresses
+  vaultId?: string; // For vault account transfers
+  externalWalletId?: string; // For whitelisted external wallets
+  oneTimeAddress?: string; // For one-time external addresses
 }

@@ -1,7 +1,7 @@
 {
   "name": "shred_custody",
   "version": "1.0.0",
-  "description": "Fireblocks TypeScript SDK examples demonstrating custody operations, vault management, and transaction workflows",
+  "description": "Fireblocks examples: SDK operations, Web3 provider, and Hyperliquid EIP-712 integration",
   "main": "dist/client.js",
   "scripts": {
     "example:list-default": "ts-node src/Fireblocks-SDK-examples/example-list-default-accounts.ts",

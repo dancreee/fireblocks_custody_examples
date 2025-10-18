@@ -32,10 +32,7 @@ async function main() {
 
     // Create a transaction to an external wallet (whitelisted)
     // First, find the wallet ID by name
-    const walletId = await findExternalWalletByName(
-      fireblocks,
-      "Dane Rabby Sepolia Testnet"
-    );
+    const walletId = await findExternalWalletByName(fireblocks, "Dane Rabby Sepolia Testnet");
     if (!walletId) {
       throw new Error("External wallet not found");
     }
@@ -75,9 +72,7 @@ async function main() {
       console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
     }
     if (result.blockNumber) {
-      console.log(
-        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
-      );
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
     }
   } catch (error) {
     console.error("Error:", error);

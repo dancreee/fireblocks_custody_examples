@@ -7,8 +7,7 @@ import { Fireblocks, TransactionStateEnum } from "@fireblocks/ts-sdk";
 import { ethers } from "ethers";
 
 // Type alias for transaction status
-type TransactionStatus =
-  (typeof TransactionStateEnum)[keyof typeof TransactionStateEnum];
+type TransactionStatus = (typeof TransactionStateEnum)[keyof typeof TransactionStateEnum];
 
 /**
  * Terminal transaction states that indicate completion
@@ -99,10 +98,7 @@ export async function monitorTransaction(
       const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
       // Wait for transaction to be mined
-      const receipt = await provider.waitForTransaction(
-        txHash,
-        waitForConfirmations
-      );
+      const receipt = await provider.waitForTransaction(txHash, waitForConfirmations);
 
       if (!receipt) {
         return {

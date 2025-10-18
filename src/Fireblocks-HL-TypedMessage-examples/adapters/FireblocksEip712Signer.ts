@@ -1,5 +1,11 @@
 import { ethers } from "ethers";
-import { Fireblocks, TransactionOperation, TransactionStateEnum, TransactionRequest, TransferPeerPathType } from "@fireblocks/ts-sdk";
+import {
+  Fireblocks,
+  TransactionOperation,
+  TransactionStateEnum,
+  TransactionRequest,
+  TransferPeerPathType,
+} from "@fireblocks/ts-sdk";
 import { readFileSync } from "fs";
 import * as path from "path";
 import { FireblocksSignerConfig } from "../types";
@@ -39,9 +45,8 @@ export class FireblocksEip712Signer extends ethers.Signer {
   }
 
   /**
-   * Get the Ethereum address for this signer.
-   * Derives the address from Fireblocks vault account (ETH asset).
-   * The same address works for Ethereum, Arbitrum and Hyperliquid.
+   * Derives address from Fireblocks vault ETH asset.
+   * Works for Ethereum, Arbitrum, and Hyperliquid.
    */
   async getAddress(): Promise<string> {
     if (this.address) {
@@ -59,7 +64,7 @@ export class FireblocksEip712Signer extends ethers.Signer {
       if (!addresses || addresses.length === 0 || !addresses[0].address) {
         throw new Error(
           `No ETH addresses found for vault account ${this.vaultAccountId}. ` +
-          `Ensure ETH asset is activated in Fireblocks.`
+            `Ensure ETH asset is activated in Fireblocks.`
         );
       }
 
@@ -71,15 +76,9 @@ export class FireblocksEip712Signer extends ethers.Signer {
   }
 
   /**
-   * Sign typed data (EIP-712) via Fireblocks TYPED_MESSAGE operation.
-   * This is the public method required by ethers.Signer interface.
-   * Note: In ethers v5, this method is prefixed with underscore (_signTypedData)
-   * because it was experimental. In v6 it was renamed to signTypedData.
-   *
-   * @param domain - EIP-712 domain (e.g., { name: "Exchange", chainId: 1337 })
-   * @param types - EIP-712 types definition
-   * @param message - The message to sign
-   * @returns 65-byte signature as hex string with 0x prefix
+   * Signs EIP-712 typed data via Fireblocks TYPED_MESSAGE operation.
+   * Polls until signature is approved/rejected on Fireblocks mobile.
+   * Returns 65-byte signature (0x-prefixed).
    */
   async _signTypedData(
     domain: ethers.TypedDataDomain,
@@ -123,7 +122,8 @@ export class FireblocksEip712Signer extends ethers.Signer {
   }
 
   /**
-   * Poll Fireblocks transaction until COMPLETED status.
+   * Polls Fireblocks tx until COMPLETED/FAILED/CANCELLED.
+   * Max 10 minutes (120 attempts * 5s interval).
    */
   private async pollForSignature(txId: string): Promise<string> {
     for (let attempt = 0; attempt < FireblocksEip712Signer.MAX_POLL_ATTEMPTS; attempt++) {
@@ -146,33 +146,38 @@ export class FireblocksEip712Signer extends ethers.Signer {
         status === TransactionStateEnum.Cancelled ||
         status === TransactionStateEnum.Blocked
       ) {
-        const details = [txInfo.subStatus || 'No subStatus'];
+        const details = [txInfo.subStatus || "No subStatus"];
         const sysMsgs = (txInfo as any).systemMessages;
         if (Array.isArray(sysMsgs) && sysMsgs.length > 0) {
-          details.push(sysMsgs.join('; '));
+          details.push(sysMsgs.join("; "));
         }
-        throw new Error(`Transaction ${status.toLowerCase()}: ${details.join(' | ')}`);
+        throw new Error(`Transaction ${status.toLowerCase()}: ${details.join(" | ")}`);
       }
 
       // Continue polling for other states (SUBMITTED, PENDING_SIGNATURE, etc.)
     }
 
-    const timeoutSeconds = (FireblocksEip712Signer.MAX_POLL_ATTEMPTS * FireblocksEip712Signer.POLL_INTERVAL_MS) / 1000;
+    const timeoutSeconds =
+      (FireblocksEip712Signer.MAX_POLL_ATTEMPTS * FireblocksEip712Signer.POLL_INTERVAL_MS) / 1000;
     throw new Error(`Signature polling timeout after ${timeoutSeconds} seconds`);
   }
 
   /**
-   * Normalize Fireblocks signature to EIP-712 format (65 bytes with v = 27/28).
+   * Normalizes Fireblocks sig to EIP-712 format (65 bytes, v=27/28).
    */
   private normalizeSignature(sig: any): string {
     if (!sig || typeof sig !== "object") {
-      throw new Error(`Invalid signature format from Fireblocks: expected object, got ${typeof sig}`);
+      throw new Error(
+        `Invalid signature format from Fireblocks: expected object, got ${typeof sig}`
+      );
     }
 
     // Fireblocks returns { r, s, v, fullSig }
     const fullSig = sig.fullSig;
     if (typeof fullSig !== "string" || fullSig.length !== 128) {
-      throw new Error(`Invalid fullSig from Fireblocks: expected 128 hex chars, got ${fullSig?.length || 0}`);
+      throw new Error(
+        `Invalid fullSig from Fireblocks: expected 128 hex chars, got ${fullSig?.length || 0}`
+      );
     }
 
     // v is 0 or 1, normalize to 27 or 28 for EIP-712
@@ -186,33 +191,42 @@ export class FireblocksEip712Signer extends ethers.Signer {
     const normalized = `0x${fullSig}${vHex}`;
 
     if (normalized.length !== 132) {
-      throw new Error(`Invalid signature length: expected 132 chars (0x + 130 hex), got ${normalized.length}`);
+      throw new Error(
+        `Invalid signature length: expected 132 chars (0x + 130 hex), got ${normalized.length}`
+      );
     }
 
     return normalized;
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private buildTypedDataObject(
     domain: ethers.TypedDataDomain,
     types: Record<string, ethers.TypedDataField[]>,
     message: Record<string, any>
-  ): { types: Record<string, ethers.TypedDataField[]>; domain: ethers.TypedDataDomain; primaryType: string; message: Record<string, any> } {
+  ): {
+    types: Record<string, ethers.TypedDataField[]>;
+    domain: ethers.TypedDataDomain;
+    primaryType: string;
+    message: Record<string, any>;
+  } {
     const domainType: ethers.TypedDataField[] = [];
     if (domain.name !== undefined) domainType.push({ name: "name", type: "string" });
     if (domain.version !== undefined) domainType.push({ name: "version", type: "string" });
     if (domain.chainId !== undefined) domainType.push({ name: "chainId", type: "uint256" });
-    if ((domain as any).verifyingContract !== undefined) domainType.push({ name: "verifyingContract", type: "address" });
+    if ((domain as any).verifyingContract !== undefined)
+      domainType.push({ name: "verifyingContract", type: "address" });
     if ((domain as any).salt !== undefined) domainType.push({ name: "salt", type: "bytes32" });
 
     const typesWithDomain: Record<string, ethers.TypedDataField[]> = types.EIP712Domain
       ? types
       : { ...types, EIP712Domain: domainType };
 
-    const primaryType = Object.keys(typesWithDomain).find((t) => t !== "EIP712Domain") || "EIP712Domain";
+    const primaryType =
+      Object.keys(typesWithDomain).find((t) => t !== "EIP712Domain") || "EIP712Domain";
 
     return { types: typesWithDomain, domain, primaryType, message };
   }
@@ -243,15 +257,22 @@ export class FireblocksEip712Signer extends ethers.Signer {
     throw new Error("getTransactionCount not supported - Hyperliquid manages nonces internally");
   }
 
-  async estimateGas(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.BigNumber> {
+  async estimateGas(
+    transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>
+  ): Promise<ethers.BigNumber> {
     throw new Error("estimateGas not supported - Hyperliquid has no gas fees");
   }
 
-  async call(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>, blockTag?: ethers.providers.BlockTag): Promise<string> {
+  async call(
+    transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>,
+    blockTag?: ethers.providers.BlockTag
+  ): Promise<string> {
     throw new Error("call not supported - use _signTypedData for Hyperliquid");
   }
 
-  async sendTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.providers.TransactionResponse> {
+  async sendTransaction(
+    transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>
+  ): Promise<ethers.providers.TransactionResponse> {
     throw new Error("sendTransaction not supported - use _signTypedData for Hyperliquid");
   }
 
@@ -271,11 +292,15 @@ export class FireblocksEip712Signer extends ethers.Signer {
     throw new Error("resolveName not supported - ENS not available on Hyperliquid");
   }
 
-  checkTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): ethers.utils.Deferrable<ethers.providers.TransactionRequest> {
+  checkTransaction(
+    transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>
+  ): ethers.utils.Deferrable<ethers.providers.TransactionRequest> {
     throw new Error("checkTransaction not supported - use _signTypedData for Hyperliquid");
   }
 
-  async populateTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.providers.TransactionRequest> {
+  async populateTransaction(
+    transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>
+  ): Promise<ethers.providers.TransactionRequest> {
     throw new Error("populateTransaction not supported - use _signTypedData for Hyperliquid");
   }
 }

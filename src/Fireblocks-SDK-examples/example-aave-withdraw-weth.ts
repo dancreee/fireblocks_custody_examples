@@ -124,13 +124,9 @@ async function main() {
       console.log(`Etherscan: https://sepolia.etherscan.io/tx/${result.txHash}`);
     }
     if (result.blockNumber) {
-      console.log(
-        `Block: ${result.blockNumber} (${result.confirmations} confirmations)`
-      );
+      console.log(`Block: ${result.blockNumber} (${result.confirmations} confirmations)`);
     }
-    console.log(
-      "\n💡 Check your Aave position at https://app.aave.com (testnet mode)"
-    );
+    console.log("\n💡 Check your Aave position at https://app.aave.com (testnet mode)");
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

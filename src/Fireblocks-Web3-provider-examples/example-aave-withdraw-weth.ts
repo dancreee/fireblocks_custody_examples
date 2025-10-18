@@ -101,7 +101,6 @@ async function main() {
     console.log(`Gas used: ${receipt?.gasUsed.toString()}`);
     console.log(`Status: ${receipt?.status === 1 ? "Success" : "Failed"}`);
     console.log("\n💡 Check your Aave position at https://app.aave.com");
-
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);
