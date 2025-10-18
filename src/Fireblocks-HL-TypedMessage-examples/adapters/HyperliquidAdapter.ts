@@ -1,5 +1,5 @@
-import BigNumber from "bignumber.js";
-import * as hl from "@nktkas/hyperliquid";
+import BN from "bignumber.js";
+import { InfoClient, ExchangeClient, HttpTransport } from "@nktkas/hyperliquid";
 import { FireblocksEip712Signer } from "./FireblocksEip712Signer";
 import { FireblocksSignerConfig, TxResult } from "../types";
 
@@ -15,15 +15,15 @@ export enum HL_ASSET_INDICES {
 export class HyperliquidAdapter {
   private account: string | null = null;
   private signer: FireblocksEip712Signer;
-  private infoClient: hl.InfoClient;
-  private exchangeClient: hl.ExchangeClient | null = null;
+  private infoClient: InfoClient;
+  private exchangeClient: ExchangeClient | null = null;
 
   constructor(fbSignerOpts: FireblocksSignerConfig) {
     this.signer = new FireblocksEip712Signer(fbSignerOpts);
 
     // Initialize InfoClient for read-only operations
-    this.infoClient = new hl.InfoClient({
-      transport: new hl.HttpTransport(),
+    this.infoClient = new InfoClient({
+      transport: new HttpTransport(),
     });
   }
 
@@ -69,7 +69,7 @@ export class HyperliquidAdapter {
    * Places IOC order for ETH perp (long if amount > 0, short if < 0).
    * Applies 0.5% slippage. Requires Fireblocks approval.
    */
-  async adjustExposure(amount: BigNumber): Promise<TxResult> {
+  async adjustExposure(amount: BN): Promise<TxResult> {
     try {
       const ethInfo: any = await this.getPerpInfo(HL_ASSET_INDICES.ETH);
       const exchangeClient = await this.ensureExchangeClient();
@@ -80,7 +80,7 @@ export class HyperliquidAdapter {
 
       // Apply slippage: buy higher, sell lower
       const slippageFactor = isLong ? 1.005 : 0.995;
-      const limitPrice = new BigNumber(ethInfo.markPx)
+      const limitPrice = new BN(ethInfo.markPx)
         .times(slippageFactor)
         .decimalPlaces(1)
         .toString();
@@ -108,7 +108,7 @@ export class HyperliquidAdapter {
 
       return {
         hash: "",
-        gasUsed: new BigNumber(0),
+        gasUsed: new BN(0),
         outputAmount: amount,
       };
     } catch (e) {
@@ -120,13 +120,13 @@ export class HyperliquidAdapter {
    * Withdraws USDC to Arbitrum. Deducts $1 fee.
    * Requires Fireblocks approval.
    */
-  async initiateWithdrawal(amount: BigNumber): Promise<TxResult> {
+  async initiateWithdrawal(amount: BN): Promise<TxResult> {
     try {
       const account = await this.getAddress();
       const exchangeClient = await this.ensureExchangeClient();
 
       // Hyperliquid charges a $1 USDC fee for withdrawals
-      const HL_WITHDRAW_FEE_USDC = new BigNumber(1);
+      const HL_WITHDRAW_FEE_USDC = new BN(1);
 
       // Call withdraw3 API to initiate withdrawal to Arbitrum
       await exchangeClient.withdraw3({
@@ -137,7 +137,7 @@ export class HyperliquidAdapter {
       // Return result with fee deducted from output amount
       return {
         hash: "",
-        gasUsed: new BigNumber(0),
+        gasUsed: new BN(0),
         outputAmount: amount.minus(HL_WITHDRAW_FEE_USDC),
       };
     } catch (e) {
@@ -145,15 +145,15 @@ export class HyperliquidAdapter {
     }
   }
 
-  private async ensureExchangeClient(): Promise<hl.ExchangeClient> {
+  private async ensureExchangeClient(): Promise<ExchangeClient> {
     if (this.exchangeClient) {
       return this.exchangeClient;
     }
 
     // Initialize ExchangeClient with Fireblocks signer
-    this.exchangeClient = new hl.ExchangeClient({
+    this.exchangeClient = new ExchangeClient({
       wallet: this.signer,
-      transport: new hl.HttpTransport(),
+      transport: new HttpTransport(),
     });
 
     return this.exchangeClient;

@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import BN from "bignumber.js";
 
 /**
  * Configuration for FireblocksEip712Signer
@@ -16,6 +16,6 @@ export interface FireblocksSignerConfig {
  */
 export interface TxResult {
   hash: string;
-  gasUsed: BigNumber;
-  outputAmount: BigNumber;
+  gasUsed: BN;
+  outputAmount: BN;
 }
