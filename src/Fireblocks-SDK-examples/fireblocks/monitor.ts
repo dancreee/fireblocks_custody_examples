@@ -96,7 +96,7 @@ export async function monitorTransaction(
   // Phase 2: Monitor on-chain confirmation (if RPC URL provided and we have a tx hash)
   if (rpcUrl && txHash) {
     try {
-      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
       // Wait for transaction to be mined
       const receipt = await provider.waitForTransaction(

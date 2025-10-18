@@ -42,14 +42,14 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const UNWRAP_AMOUNT = ethers.parseEther("0.001"); // Amount in wei
+    const UNWRAP_AMOUNT = ethers.utils.parseEther("0.001"); // Amount in wei
 
     console.log("\nPreparing WETH unwrap transaction...");
     console.log(`WETH Contract: ${WETH_CONTRACT}`);
-    console.log(`Amount: ${ethers.formatEther(UNWRAP_AMOUNT)} WETH`);
+    console.log(`Amount: ${ethers.utils.formatEther(UNWRAP_AMOUNT)} WETH`);
 
     // Encode the withdraw function call
-    const iface = new ethers.Interface(WETH_ABI);
+    const iface = new ethers.utils.Interface(WETH_ABI);
     const encodedData = iface.encodeFunctionData("withdraw", [UNWRAP_AMOUNT]);
 
     console.log("\nEncoded contract call data:", encodedData);

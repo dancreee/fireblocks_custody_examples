@@ -46,15 +46,15 @@ async function main() {
 
     // Approve amount - match what you plan to supply
     // NOTE: You'll need to approve again if you want to supply more later
-    const APPROVE_AMOUNT = ethers.parseEther("0.001");
+    const APPROVE_AMOUNT = ethers.utils.parseEther("0.001");
 
     console.log("\nPreparing ERC20 approval transaction...");
     console.log(`Token: ${TOKEN_ADDRESS}`);
     console.log(`Spender: ${SPENDER_ADDRESS}`);
-    console.log(`Amount: ${ethers.formatEther(APPROVE_AMOUNT)} WETH`);
+    console.log(`Amount: ${ethers.utils.formatEther(APPROVE_AMOUNT)} WETH`);
 
     // Encode the approve function call
-    const iface = new ethers.Interface(ERC20_ABI);
+    const iface = new ethers.utils.Interface(ERC20_ABI);
     const encodedData = iface.encodeFunctionData("approve", [
       SPENDER_ADDRESS,
       APPROVE_AMOUNT,

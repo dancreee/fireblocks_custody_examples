@@ -52,7 +52,7 @@ async function main() {
     console.log(`Amount: ${WRAP_AMOUNT} ETH`);
 
     // Encode the deposit function call
-    const iface = new ethers.Interface(WETH_ABI);
+    const iface = new ethers.utils.Interface(WETH_ABI);
     const encodedData = iface.encodeFunctionData("deposit", []);
 
     console.log("\nEncoded contract call data:", encodedData);

@@ -51,7 +51,7 @@ async function main() {
 
     // Configuration
     const VAULT_ID = "0"; // Source vault ID
-    const SUPPLY_AMOUNT = ethers.parseEther("0.001"); // Amount in wei
+    const SUPPLY_AMOUNT = ethers.utils.parseEther("0.001"); // Amount in wei
 
     // IMPORTANT: Replace this with your vault's Sepolia address
     // This is where the aWETH tokens will be sent
@@ -61,11 +61,11 @@ async function main() {
     console.log("\nPreparing Aave supply transaction...");
     console.log(`Pool: ${AAVE_POOL}`);
     console.log(`WETH Asset: ${WETH_ADDRESS}`);
-    console.log(`Amount: ${ethers.formatEther(SUPPLY_AMOUNT)} WETH`);
+    console.log(`Amount: ${ethers.utils.formatEther(SUPPLY_AMOUNT)} WETH`);
     console.log(`On Behalf Of: ${ON_BEHALF_OF}`);
 
     // Encode the supply function call
-    const iface = new ethers.Interface(POOL_ABI);
+    const iface = new ethers.utils.Interface(POOL_ABI);
     const encodedData = iface.encodeFunctionData("supply", [
       WETH_ADDRESS, // asset address
       SUPPLY_AMOUNT, // amount in wei
@@ -81,7 +81,7 @@ async function main() {
     console.log("You can do this by creating an ERC20 approve transaction in Fireblocks:");
     console.log(`- Token: WETH (${WETH_ADDRESS})`);
     console.log(`- Spender: Aave Pool (${AAVE_POOL})`);
-    console.log(`- Amount: ${ethers.formatEther(SUPPLY_AMOUNT)} or more`);
+    console.log(`- Amount: ${ethers.utils.formatEther(SUPPLY_AMOUNT)} or more`);
 
     // Create the contract call transaction through Fireblocks
     const txResult = await createContractCall(

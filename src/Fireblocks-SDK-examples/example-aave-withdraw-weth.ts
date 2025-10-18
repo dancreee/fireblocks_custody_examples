@@ -49,7 +49,7 @@ const WETH_ADDRESS = "0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c";
 const POOL_ABI = ["function withdraw(address asset, uint256 amount, address to)"];
 
 // Max uint256 - used to withdraw all available balance
-const MAX_UINT256 = ethers.MaxUint256;
+const MAX_UINT256 = ethers.constants.MaxUint256;
 
 async function main() {
   try {
@@ -73,12 +73,12 @@ async function main() {
     console.log(`Pool: ${AAVE_POOL}`);
     console.log(`WETH Asset: ${WETH_ADDRESS}`);
     console.log(
-      `Amount: ${WITHDRAW_AMOUNT === MAX_UINT256 ? "ALL (max uint256)" : ethers.formatEther(WITHDRAW_AMOUNT) + " WETH"}`
+      `Amount: ${WITHDRAW_AMOUNT === MAX_UINT256 ? "ALL (max uint256)" : ethers.utils.formatEther(WITHDRAW_AMOUNT) + " WETH"}`
     );
     console.log(`To Address: ${TO_ADDRESS}`);
 
     // Encode the withdraw function call
-    const iface = new ethers.Interface(POOL_ABI);
+    const iface = new ethers.utils.Interface(POOL_ABI);
     const encodedData = iface.encodeFunctionData("withdraw", [
       WETH_ADDRESS, // asset address
       WITHDRAW_AMOUNT, // amount (or max uint256 for all)
