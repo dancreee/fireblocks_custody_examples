@@ -39,8 +39,8 @@ async function main() {
     });
 
     // Wrap with ethers.js provider
-    const provider = new ethers.BrowserProvider(eip1193Provider);
-    const signer = await provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(eip1193Provider);
+    const signer = provider.getSigner();
 
     console.log("✅ Fireblocks Web3 Provider initialized!");
     console.log("Signer address:", await signer.getAddress());
@@ -58,7 +58,7 @@ async function main() {
     // Create transaction
     const tx = await signer.sendTransaction({
       to: RECIPIENT_ADDRESS,
-      value: ethers.parseEther(SEND_AMOUNT),
+      value: ethers.utils.parseEther(SEND_AMOUNT),
     });
 
     console.log("\n✅ Transaction sent!");

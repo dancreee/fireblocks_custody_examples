@@ -48,8 +48,8 @@ async function main() {
     });
 
     // Wrap with ethers.js provider
-    const provider = new ethers.BrowserProvider(eip1193Provider);
-    const signer = await provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(eip1193Provider);
+    const signer = provider.getSigner();
 
     console.log("✅ Fireblocks Web3 Provider initialized!");
     console.log("Signer address:", await signer.getAddress());
@@ -66,7 +66,7 @@ async function main() {
 
     // Call deposit function with ETH value
     const tx = await wethContract.deposit({
-      value: ethers.parseEther(WRAP_AMOUNT),
+      value: ethers.utils.parseEther(WRAP_AMOUNT),
     });
 
     console.log("\n✅ Transaction sent!");

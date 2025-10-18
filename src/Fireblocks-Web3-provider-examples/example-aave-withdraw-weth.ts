@@ -37,7 +37,7 @@ const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 const POOL_ABI = ["function withdraw(address asset, uint256 amount, address to) returns (uint256)"];
 
 // Max uint256 - used to withdraw all available balance
-const MAX_UINT256 = ethers.MaxUint256;
+const MAX_UINT256 = ethers.constants.MaxUint256;
 
 async function main() {
   try {
@@ -57,8 +57,8 @@ async function main() {
     });
 
     // Wrap with ethers.js provider
-    const provider = new ethers.BrowserProvider(eip1193Provider);
-    const signer = await provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(eip1193Provider);
+    const signer = provider.getSigner();
 
     console.log("✅ Fireblocks Web3 Provider initialized!");
     const signerAddress = await signer.getAddress();
@@ -74,7 +74,7 @@ async function main() {
     console.log(`Pool: ${AAVE_POOL}`);
     console.log(`WETH Asset: ${WETH_ADDRESS}`);
     console.log(
-      `Amount: ${WITHDRAW_AMOUNT === MAX_UINT256 ? "ALL (max uint256)" : ethers.formatEther(WITHDRAW_AMOUNT) + " WETH"}`
+      `Amount: ${WITHDRAW_AMOUNT === MAX_UINT256 ? "ALL (max uint256)" : ethers.utils.formatEther(WITHDRAW_AMOUNT) + " WETH"}`
     );
     console.log(`To Address: ${signerAddress} (your vault)`);
 

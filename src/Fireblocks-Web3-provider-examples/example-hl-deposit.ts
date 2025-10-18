@@ -62,8 +62,8 @@ async function main() {
     });
 
     // Wrap with ethers.js provider
-    const provider = new ethers.BrowserProvider(eip1193Provider);
-    const signer = await provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(eip1193Provider);
+    const signer = provider.getSigner();
 
     const signerAddress = await signer.getAddress();
     console.log(`Signer address: ${signerAddress} (same for Arbitrum & Hyperliquid)\n`);
@@ -86,10 +86,10 @@ async function main() {
     // Check USDC balance
     const decimals = await usdcContract.decimals();
     const balance = await usdcContract.balanceOf(signerAddress);
-    const balanceFormatted = ethers.formatUnits(balance, decimals);
+    const balanceFormatted = ethers.utils.formatUnits(balance, decimals);
 
     // Validate sufficient balance
-    const depositAmountWei = ethers.parseUnits(DEPOSIT_AMOUNT, decimals);
+    const depositAmountWei = ethers.utils.parseUnits(DEPOSIT_AMOUNT, decimals);
     if (balance < depositAmountWei) {
       throw new Error(
         `Insufficient USDC balance. Required: ${DEPOSIT_AMOUNT} USDC, Available: ${balanceFormatted} USDC`

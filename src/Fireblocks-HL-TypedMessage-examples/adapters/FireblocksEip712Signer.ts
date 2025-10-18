@@ -16,17 +16,17 @@ import { FireblocksSignerConfig } from "../types";
  * - Signs EIP-712 messages via Fireblocks API
  * - Polls for signature completion
  */
-export class FireblocksEip712Signer implements ethers.Signer {
+export class FireblocksEip712Signer extends ethers.Signer {
+  private static readonly POLL_INTERVAL_MS = 5000;
+  private static readonly MAX_POLL_ATTEMPTS = 120; // 10 minutes max
+
   private fireblocks: Fireblocks;
   private vaultAccountId: number;
   private address?: string;
 
-  // Required by ethers.Signer interface
-  // We don't use a blockchain provider since Hyperliquid is its own L1
-  // and Fireblocks handles all signing
-  provider: null = null;
-
   constructor(config: FireblocksSignerConfig) {
+    super();
+
     // Initialize Fireblocks SDK
     const secretKey = readFileSync(path.resolve(config.secretKeyPath), "utf8");
     this.fireblocks = new Fireblocks({
@@ -56,7 +56,7 @@ export class FireblocksEip712Signer implements ethers.Signer {
       });
 
       const addresses = response.data.addresses;
-      if (!addresses || addresses.length === 0) {
+      if (!addresses || addresses.length === 0 || !addresses[0].address) {
         throw new Error(
           `No ETH addresses found for vault account ${this.vaultAccountId}. ` +
           `Ensure ETH asset is activated in Fireblocks.`
@@ -64,11 +64,6 @@ export class FireblocksEip712Signer implements ethers.Signer {
       }
 
       this.address = addresses[0].address;
-
-      if (!this.address) {
-        throw new Error(`ETH address exists but has no value for vault ${this.vaultAccountId}`);
-      }
-
       return this.address;
     } catch (error: any) {
       throw new Error(`Failed to derive address from Fireblocks: ${error.message || error}`);
@@ -78,20 +73,19 @@ export class FireblocksEip712Signer implements ethers.Signer {
   /**
    * Sign typed data (EIP-712) via Fireblocks TYPED_MESSAGE operation.
    * This is the public method required by ethers.Signer interface.
+   * Note: In ethers v5, this method is prefixed with underscore (_signTypedData)
+   * because it was experimental. In v6 it was renamed to signTypedData.
    *
    * @param domain - EIP-712 domain (e.g., { name: "Exchange", chainId: 1337 })
    * @param types - EIP-712 types definition
    * @param message - The message to sign
    * @returns 65-byte signature as hex string with 0x prefix
    */
-  async signTypedData(
+  async _signTypedData(
     domain: ethers.TypedDataDomain,
     types: Record<string, ethers.TypedDataField[]>,
     message: Record<string, any>
   ): Promise<string> {
-    const address = await this.getAddress();
-
-    const note = this.generateTransactionNote(domain, message);
     const typedDataObject = this.buildTypedDataObject(domain, types, message);
 
     try {
@@ -102,8 +96,8 @@ export class FireblocksEip712Signer implements ethers.Signer {
           type: TransferPeerPathType.VaultAccount,
           id: this.vaultAccountId.toString(),
         },
-        assetId: "ETH", // ETH should always be used in FB for typed message signing
-        note: note,
+        assetId: "ETH", // ETH should always be used in Fireblocks for typed message signing
+        note: `HL ${domain.name || "EIP-712"} signature`,
         extraParameters: {
           rawMessageData: {
             messages: [
@@ -124,8 +118,7 @@ export class FireblocksEip712Signer implements ethers.Signer {
       const signature = await this.pollForSignature(txId);
       return signature;
     } catch (error: any) {
-      const details = this.formatFireblocksError(error);
-      throw new Error(`Fireblocks signing failed: ${details}`);
+      throw new Error(`Fireblocks signing failed: ${error?.message || error}`);
     }
   }
 
@@ -133,11 +126,8 @@ export class FireblocksEip712Signer implements ethers.Signer {
    * Poll Fireblocks transaction until COMPLETED status.
    */
   private async pollForSignature(txId: string): Promise<string> {
-    const pollInterval = 5000; // 5 seconds
-    const maxAttempts = 120; // 10 minutes max (5s * 120 = 600s)
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      await this.sleep(pollInterval);
+    for (let attempt = 0; attempt < FireblocksEip712Signer.MAX_POLL_ATTEMPTS; attempt++) {
+      await this.sleep(FireblocksEip712Signer.POLL_INTERVAL_MS);
 
       const response = await this.fireblocks.transactions.getTransaction({ txId });
       const txInfo: any = response.data;
@@ -148,29 +138,7 @@ export class FireblocksEip712Signer implements ethers.Signer {
         if (!signedMessages || signedMessages.length === 0) {
           throw new Error("Transaction completed but no signed messages found");
         }
-
-        const sig = signedMessages[0]?.signature;
-        if (!sig || typeof sig !== "object") {
-          throw new Error(`Invalid signature format from Fireblocks: expected object, got ${typeof sig}`);
-        }
-
-        // Fireblocks returns { r, s, v, fullSig }
-        // fullSig is 64 bytes (128 hex chars), v needs to be appended
-        const fullSig = sig.fullSig;
-        if (typeof fullSig !== "string" || fullSig.length !== 128) {
-          throw new Error(`Invalid fullSig from Fireblocks: expected 128 hex chars, got ${fullSig?.length || 0}`);
-        }
-
-        // v is 0 or 1, normalize to 27 or 28 for EIP-712
-        const v = typeof sig.v === "number" ? sig.v : 0;
-        const vNormalized = v + 27;
-        const vHex = vNormalized.toString(16);
-
-        const normalized = `0x${fullSig}${vHex}`;
-        if (normalized.length !== 132) {
-          throw new Error(`Invalid signature length: expected 132 chars (0x + 130 hex), got ${normalized.length}`);
-        }
-        return normalized;
+        return this.normalizeSignature(signedMessages[0]?.signature);
       }
 
       if (
@@ -178,35 +146,50 @@ export class FireblocksEip712Signer implements ethers.Signer {
         status === TransactionStateEnum.Cancelled ||
         status === TransactionStateEnum.Blocked
       ) {
-        const sub = txInfo.subStatus || 'No subStatus';
+        const details = [txInfo.subStatus || 'No subStatus'];
         const sysMsgs = (txInfo as any).systemMessages;
-        const sys = Array.isArray(sysMsgs) && sysMsgs.length > 0 ? ` | systemMessages: ${sysMsgs.join('; ')}` : '';
-        throw new Error(`Transaction ${status.toLowerCase()}: ${sub}${sys}`);
+        if (Array.isArray(sysMsgs) && sysMsgs.length > 0) {
+          details.push(sysMsgs.join('; '));
+        }
+        throw new Error(`Transaction ${status.toLowerCase()}: ${details.join(' | ')}`);
       }
 
       // Continue polling for other states (SUBMITTED, PENDING_SIGNATURE, etc.)
     }
 
-    throw new Error(`Signature polling timeout after ${maxAttempts * pollInterval / 1000} seconds`);
+    const timeoutSeconds = (FireblocksEip712Signer.MAX_POLL_ATTEMPTS * FireblocksEip712Signer.POLL_INTERVAL_MS) / 1000;
+    throw new Error(`Signature polling timeout after ${timeoutSeconds} seconds`);
   }
 
-  private generateTransactionNote(domain: ethers.TypedDataDomain, message: Record<string, any>): string {
-    const domainName = domain.name || "Unknown";
-
-    // Note: @nktkas/hyperliquid hashes the action data into message.connectionId,
-    // so the actual order/withdrawal details are not available in the EIP-712 message.
-    // The message only contains { source: "a", connectionId: hash(action) }
-
-    // For L1 actions (orders, cancels, etc), the message structure is:
-    // { source: "a" | "b", connectionId: bytes32 }
-    // The connectionId is a hash that includes the action, nonce, and optionally vault/expiry
-
-    if (message.connectionId) {
-      const connId = message.connectionId.toString().substring(0, 10);
-      return `HL L1 action signature (${domainName}, id: ${connId}...)`;
+  /**
+   * Normalize Fireblocks signature to EIP-712 format (65 bytes with v = 27/28).
+   */
+  private normalizeSignature(sig: any): string {
+    if (!sig || typeof sig !== "object") {
+      throw new Error(`Invalid signature format from Fireblocks: expected object, got ${typeof sig}`);
     }
 
-    return `HL EIP-712 signature: ${domainName}`;
+    // Fireblocks returns { r, s, v, fullSig }
+    const fullSig = sig.fullSig;
+    if (typeof fullSig !== "string" || fullSig.length !== 128) {
+      throw new Error(`Invalid fullSig from Fireblocks: expected 128 hex chars, got ${fullSig?.length || 0}`);
+    }
+
+    // v is 0 or 1, normalize to 27 or 28 for EIP-712
+    const v = typeof sig.v === "number" ? sig.v : 0;
+    if (v !== 0 && v !== 1) {
+      throw new Error(`Invalid signature v value: expected 0 or 1, got ${v}`);
+    }
+
+    const vNormalized = v + 27;
+    const vHex = vNormalized.toString(16);
+    const normalized = `0x${fullSig}${vHex}`;
+
+    if (normalized.length !== 132) {
+      throw new Error(`Invalid signature length: expected 132 chars (0x + 130 hex), got ${normalized.length}`);
+    }
+
+    return normalized;
   }
 
   private sleep(ms: number): Promise<void> {
@@ -234,57 +217,65 @@ export class FireblocksEip712Signer implements ethers.Signer {
     return { types: typesWithDomain, domain, primaryType, message };
   }
 
-  private formatFireblocksError(error: any): string {
-    return error?.message || String(error);
-  }
+  // Required ethers.Signer abstract methods (must implement, throw errors for unsupported)
 
-  // Required ethers.Signer methods (not used for HL, throw errors)
-
-  async signTransaction(transaction: ethers.TransactionRequest): Promise<string> {
-    throw new Error("signTransaction not supported - use signTypedData for Hyperliquid");
+  async signTransaction(transaction: ethers.providers.TransactionRequest): Promise<string> {
+    throw new Error("signTransaction not supported - use _signTypedData for Hyperliquid");
   }
 
   async signMessage(message: string | Uint8Array): Promise<string> {
-    throw new Error("signMessage not supported - use signTypedData for Hyperliquid");
+    throw new Error("signMessage not supported - use _signTypedData for Hyperliquid");
   }
 
-  connect(provider: ethers.Provider): ethers.Signer {
+  connect(provider: ethers.providers.Provider): ethers.Signer {
     throw new Error("connect not supported - FireblocksSigner is provider-less");
   }
 
-  async getNonce(blockTag?: ethers.BlockTag): Promise<number> {
-    throw new Error("getNonce not supported - Hyperliquid manages nonces internally");
+  // Override concrete ethers.Signer methods to prevent misuse
+  // These methods have default implementations in the parent class that require a provider,
+  // but Hyperliquid is not EVM-compatible and doesn't use these operations
+
+  async getBalance(blockTag?: ethers.providers.BlockTag): Promise<ethers.BigNumber> {
+    throw new Error("getBalance not supported - Hyperliquid is not EVM-compatible");
   }
 
-  async populateCall(tx: ethers.TransactionRequest): Promise<ethers.TransactionLike> {
-    throw new Error("populateCall not supported - use signTypedData for Hyperliquid");
+  async getTransactionCount(blockTag?: ethers.providers.BlockTag): Promise<number> {
+    throw new Error("getTransactionCount not supported - Hyperliquid manages nonces internally");
   }
 
-  async populateTransaction(tx: ethers.TransactionRequest): Promise<ethers.TransactionLike> {
-    throw new Error("populateTransaction not supported - use signTypedData for Hyperliquid");
+  async estimateGas(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.BigNumber> {
+    throw new Error("estimateGas not supported - Hyperliquid has no gas fees");
   }
 
-  async estimateGas(tx: ethers.TransactionRequest): Promise<bigint> {
-    throw new Error("estimateGas not supported - Hyperliquid has no gas");
+  async call(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>, blockTag?: ethers.providers.BlockTag): Promise<string> {
+    throw new Error("call not supported - use _signTypedData for Hyperliquid");
   }
 
-  async call(tx: ethers.TransactionRequest): Promise<string> {
-    throw new Error("call not supported - use signTypedData for Hyperliquid");
+  async sendTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.providers.TransactionResponse> {
+    throw new Error("sendTransaction not supported - use _signTypedData for Hyperliquid");
   }
 
-  async resolveName(name: string): Promise<null | string> {
-    throw new Error("resolveName not supported");
+  async getChainId(): Promise<number> {
+    throw new Error("getChainId not supported - Hyperliquid is not EVM-compatible");
   }
 
-  async sendTransaction(tx: ethers.TransactionRequest): Promise<ethers.TransactionResponse> {
-    throw new Error("sendTransaction not supported - use signTypedData for Hyperliquid");
+  async getGasPrice(): Promise<ethers.BigNumber> {
+    throw new Error("getGasPrice not supported - Hyperliquid has no gas fees");
   }
 
-  async populateAuthorization(authorization: any): Promise<any> {
-    throw new Error("populateAuthorization not supported");
+  async getFeeData(): Promise<ethers.providers.FeeData> {
+    throw new Error("getFeeData not supported - Hyperliquid has no gas fees");
   }
 
-  async authorize(authorization: ethers.AuthorizationRequest): Promise<ethers.Authorization> {
-    throw new Error("authorize not supported");
+  async resolveName(name: string): Promise<string> {
+    throw new Error("resolveName not supported - ENS not available on Hyperliquid");
+  }
+
+  checkTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): ethers.utils.Deferrable<ethers.providers.TransactionRequest> {
+    throw new Error("checkTransaction not supported - use _signTypedData for Hyperliquid");
+  }
+
+  async populateTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.providers.TransactionRequest> {
+    throw new Error("populateTransaction not supported - use _signTypedData for Hyperliquid");
   }
 }

@@ -57,8 +57,8 @@ async function main() {
     });
 
     // Wrap with ethers.js provider
-    const provider = new ethers.BrowserProvider(eip1193Provider);
-    const signer = await provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(eip1193Provider);
+    const signer = provider.getSigner();
 
     console.log("✅ Fireblocks Web3 Provider initialized!");
     const signerAddress = await signer.getAddress();
@@ -84,7 +84,7 @@ async function main() {
     // Call supply function
     const tx = await aavePool.supply(
       WETH_ADDRESS, // asset address
-      ethers.parseEther(SUPPLY_AMOUNT), // amount in wei
+      ethers.utils.parseEther(SUPPLY_AMOUNT), // amount in wei
       signerAddress, // address to receive aTokens (your vault)
       0 // referralCode (0 for no referral)
     );
